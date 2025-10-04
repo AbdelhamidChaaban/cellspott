@@ -1,0 +1,39 @@
+<!-- Signup Form -->
+<form id="signup-form" class="flex flex-col">
+  <h2 class="text-3xl font-bold mb-5 text-white">Sign Up</h2>
+  
+  <!-- Warning Message -->
+  <div class="bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 mb-4">
+    <p class="text-sm text-yellow-200">⚠️ Please be precise when entering your information. All fields cannot be changed after registration.</p>
+  </div>
+  
+  <div class="grid grid-cols-2 gap-4">
+    <div class="input-field-glass">
+      <input id="signup-firstName" type="text" required>
+      <label>First Name</label>
+    </div>
+    <div class="input-field-glass">
+      <input id="signup-lastName" type="text" required>
+      <label>Last Name</label>
+    </div>
+  </div>
+  
+  <div class="input-field-glass">
+    <input id="signup-phone" type="text" inputmode="numeric" pattern="^\d{8}$" required>
+    <label>Phone (8 digits)</label>
+  </div>
+  
+  <div class="input-field-glass">
+    <input id="signup-email" type="email" required>
+    <label>Enter your email</label>
+  </div>
+  
+  <div class="input-field-glass">
+    <input id="signup-password" type="password" minlength="6" required>
+    <label>Enter your password</label>
+  </div>
+  
+  <button type="submit" class="glass-button mt-6">Create Account</button>
+  
+  <p id="signup-error" class="text-sm text-red-400 mt-3 text-center"></p>
+</form>

@@ -1,0 +1,68 @@
+<div id="page-streaming" class="page">
+  <div class="card-bg border border-navy-600 rounded-2xl p-6">
+    <div class="flex items-center space-x-2 mb-4">
+      <i data-feather="tv" class="w-5 h-5"></i>
+      <h3 class="text-xl font-semibold">Streaming Services</h3>
+    </div>
+    <p class="text-sm text-gray-400 mb-8">Choose a streaming service to manage</p>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Netflix Card -->
+      <div class="card-bg border border-navy-600 rounded-2xl p-6 hover:border-blue-500 transition-colors">
+        <div class="flex flex-col items-center text-center space-y-4">
+          <div class="w-20 h-20 bg-red-600 rounded-2xl flex items-center justify-center">
+            <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M5.398 0v.006c3.028 8.556 5.37 15.175 8.348 23.596 2.344.058 4.85.398 4.854.398-2.8-7.924-5.923-16.747-8.487-24zm8.489 0v9.63L18.6 22.951c-.043-7.86-.004-15.913.002-22.95zM5.398 1.05V24c2.873-.086 4.958-.406 5.002-.398V1.05z"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-xl font-semibold mb-2">Netflix</h4>
+            <p class="text-sm text-gray-400">Manage Netflix subscriptions</p>
+          </div>
+          <button data-service="netflix" class="streaming-enter w-full py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold transition-colors flex items-center justify-center space-x-2">
+            <span>Enter</span>
+            <i data-feather="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Shahed Card -->
+      <div class="card-bg border border-navy-600 rounded-2xl p-6 hover:border-blue-500 transition-colors">
+        <div class="flex flex-col items-center text-center space-y-4">
+          <div class="w-20 h-20 bg-purple-600 rounded-2xl flex items-center justify-center">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-xl font-semibold mb-2">Shahed</h4>
+            <p class="text-sm text-gray-400">Manage Shahed subscriptions</p>
+          </div>
+          <button data-service="shahed" class="streaming-enter w-full py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold transition-colors flex items-center justify-center space-x-2">
+            <span>Enter</span>
+            <i data-feather="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- OSN+ Card -->
+      <div class="card-bg border border-navy-600 rounded-2xl p-6 hover:border-blue-500 transition-colors">
+        <div class="flex flex-col items-center text-center space-y-4">
+          <div class="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path>
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-xl font-semibold mb-2">OSN+</h4>
+            <p class="text-sm text-gray-400">Manage OSN+ subscriptions</p>
+          </div>
+          <button data-service="osn" class="streaming-enter w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors flex items-center justify-center space-x-2">
+            <span>Enter</span>
+            <i data-feather="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

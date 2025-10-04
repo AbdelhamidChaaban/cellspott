@@ -1,0 +1,29 @@
+<div id="page-profile" class="page">
+  <div class="max-w-3xl">
+    <!-- Personal Information Card -->
+    <div class="card-bg border border-navy-600 rounded-2xl p-6">
+      <div class="flex items-center space-x-2 mb-4">
+        <i data-feather="user" class="w-5 h-5"></i>
+        <h3 class="text-xl font-semibold">Personal Information</h3>
+      </div>
+      <p class="text-sm text-gray-400 mb-6">View your profile information</p>
+      <form id="profile-form" class="space-y-5">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm mb-2 text-gray-300">First Name</label>
+            <input id="profile-firstName" disabled class="w-full px-4 py-3 rounded-lg input-dark text-gray-500 cursor-not-allowed">
+          </div>
+          <div>
+            <label class="block text-sm mb-2 text-gray-300">Last Name</label>
+            <input id="profile-lastName" disabled class="w-full px-4 py-3 rounded-lg input-dark text-gray-500 cursor-not-allowed">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm mb-2 text-gray-300">Phone Number</label>
+          <input id="profile-phone" disabled class="w-full px-4 py-3 rounded-lg input-dark text-gray-500 cursor-not-allowed">
+        </div>
+        <p class="text-xs text-yellow-400 mt-4">⚠️ Personal information cannot be changed after registration.</p>
+      </form>
+    </div>
+  </div>
+</div>

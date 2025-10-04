@@ -1,0 +1,31 @@
+<div id="page-closed-services" class="page">
+  <div class="card-bg border border-navy-600 rounded-2xl p-6">
+    <div class="flex items-center space-x-2 mb-4">
+      <i data-feather="wifi" class="w-5 h-5"></i>
+      <h3 class="text-xl font-semibold">Closed u-share Services</h3>
+    </div>
+    <p class="text-sm text-gray-400 mb-6">Available u-share Services</p>
+    
+    <!-- Promo Code Section -->
+    <div class="mb-6 max-w-md">
+      <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>
+      <div class="flex gap-3">
+        <input 
+          id="promo-code-input" 
+          type="text" 
+          placeholder="Enter promo code" 
+          class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
+        />
+        <button 
+          id="apply-promo-btn" 
+          class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+        >
+          Apply
+        </button>
+      </div>
+      <div id="promo-message" class="mt-2 text-sm"></div>
+    </div>
+    
+    <div id="packages-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+  </div>
+</div>

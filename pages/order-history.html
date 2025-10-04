@@ -1,0 +1,47 @@
+<div id="page-order-history" class="page">
+  <div class="card-bg border border-navy-600 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center space-x-2">
+        <i data-feather="list" class="w-5 h-5"></i>
+        <h3 class="text-xl font-semibold">Order History</h3>
+      </div>
+      <button id="toggle-all-orders-btn" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-colors flex items-center gap-2">
+        <i data-feather="clock" class="w-4 h-4"></i>
+        <span>Show All Orders</span>
+      </button>
+    </div>
+    <p class="text-sm text-gray-400 mb-4">Showing today's orders only. Click "Show All Orders" to view previous orders.</p>
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+      <input id="order-search" placeholder="Search by phone" class="px-4 py-2.5 rounded-lg input-dark text-sm flex-1 min-w-[200px]" />
+      <select id="order-status" class="px-4 py-2.5 rounded-lg input-dark text-sm min-w-[150px]">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="failed">Failed</option>
+      </select>
+      <div class="relative">
+        <button id="order-date-btn" class="px-4 py-2.5 rounded-lg input-dark text-sm flex items-center space-x-2 min-w-[200px]">
+          <i data-feather="calendar" class="w-4 h-4"></i>
+          <span id="order-date-label">selectDateRange</span>
+        </button>
+        <input id="order-start" type="date" class="hidden" />
+        <input id="order-end" type="date" class="hidden" />
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="border-b border-navy-600">
+            <th class="text-left px-4 py-3 text-gray-400 font-medium">date</th>
+            <th class="text-left px-4 py-3 text-gray-400 font-medium">Service Type</th>
+            <th class="text-left px-4 py-3 text-gray-400 font-medium">price</th>
+            <th class="text-left px-4 py-3 text-gray-400 font-medium">status</th>
+            <th class="text-left px-4 py-3 text-gray-400 font-medium">Quantity</th>
+          </tr>
+        </thead>
+        <tbody id="order-history-body"></tbody>
+      </table>
+      <div id="order-history-empty" class="text-center text-gray-400 py-12">No order history found yet</div>
+    </div>
+  </div>
+</div>

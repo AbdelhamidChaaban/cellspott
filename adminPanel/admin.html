@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - CellSpot</title>
+  <link rel="icon" type="image/png" href="../Logo.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-navy-900 text-white">
+  
+  <!-- Admin Login View -->
+  <div id="admin-login-view" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <div class="text-center mb-8">
+        <div class="flex items-center justify-center gap-4 mb-4">
+          <img src="../Logo.png" alt="Logo" class="w-16 h-16 object-contain">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand/20">
+            <i data-feather="shield" class="w-8 h-8 text-brand"></i>
+          </div>
+        </div>
+        <h1 class="text-3xl font-bold mb-2">Admin Panel</h1>
+        <p class="text-gray-400">Cell Spott Management System</p>
+        <p class="text-gray-400">Sad W Sanadd Kl l Baladdd</p>
+      </div>
+      
+      <div class="card-bg border border-navy-600 rounded-2xl p-8">
+        <form id="admin-login-form" class="space-y-6">
+          <div>
+            <label class="block text-sm font-medium mb-2">Admin Username</label>
+            <input 
+              id="admin-username" 
+              type="text" 
+              required 
+              class="w-full px-4 py-3 rounded-lg input-dark"
+              placeholder="Enter username"
+            >
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium mb-2">Password</label>
+            <input 
+              id="admin-password" 
+              type="password" 
+              required 
+              class="w-full px-4 py-3 rounded-lg input-dark"
+              placeholder="Enter password"
+            >
+          </div>
+          
+          <button 
+            type="submit" 
+            class="w-full py-3 rounded-lg bg-brand hover:bg-brand-dark text-white font-semibold transition-colors flex items-center justify-center gap-2"
+          >
+            <i data-feather="log-in" class="w-5 h-5"></i>
+            <span>Login to Admin Panel</span>
+          </button>
+          
+          <p id="admin-login-error" class="text-sm text-red-400 text-center"></p>
+        </form>
+        
+        <div class="mt-6 pt-6 border-t border-navy-600 text-center">
+          <a href="../index.html" class="text-sm text-gray-400 hover:text-white transition-colors">
+            ← Back to Customer Site
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Admin Dashboard View -->
+  <div id="admin-dashboard-view" class="hidden min-h-screen">
+    <!-- Top Navigation -->
+    <nav class="bg-navy-800 border-b border-navy-600 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-brand/20 flex items-center justify-center">
+              <i data-feather="shield" class="w-5 h-5 text-brand"></i>
+            </div>
+            <div>
+              <h1 class="text-lg font-bold">Admin Panel</h1>
+              <p class="text-xs text-gray-400">CellSpot Management</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-4">
+            <span class="text-sm text-gray-400">Welcome, <span id="admin-name" class="text-white font-medium"></span></span>
+            <button id="admin-logout-btn" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors flex items-center gap-2">
+              <i data-feather="log-out" class="w-4 h-4"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Tab Navigation -->
+      <div class="mb-8 border-b border-navy-600">
+        <nav class="flex gap-2 overflow-x-auto">
+          <button data-tab="dashboard" class="admin-tab px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors">
+            <i data-feather="home" class="w-4 h-4 inline mr-2"></i>Dashboard
+          </button>
+          <button data-tab="orders" class="admin-tab px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors">
+            <i data-feather="shopping-cart" class="w-4 h-4 inline mr-2"></i>Orders
+          </button>
+          <button data-tab="packages" class="admin-tab px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors">
+            <i data-feather="package" class="w-4 h-4 inline mr-2"></i>Packages
+          </button>
+          <button data-tab="users" class="admin-tab px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors">
+            <i data-feather="users" class="w-4 h-4 inline mr-2"></i>Users
+          </button>
+          <button data-tab="revenue" class="admin-tab px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors">
+            <i data-feather="dollar-sign" class="w-4 h-4 inline mr-2"></i>Revenue
+          </button>
+          <button data-tab="settings" class="admin-tab px-6 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors">
+            <i data-feather="settings" class="w-4 h-4 inline mr-2"></i>Settings
+          </button>
+        </nav>
+      </div>
+      
+      <!-- Tab Content -->
+      <div id="admin-content">
+        <!-- Content will be loaded dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+  <script src="../firebase-config.js"></script>
+  <script src="admin.js"></script>
+  <script src="admin-features.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => { feather.replace(); });
+  </script>
+</body>
+</html>

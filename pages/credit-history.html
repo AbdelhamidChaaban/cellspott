@@ -1,0 +1,43 @@
+<div id="page-credit-history" class="page">
+  <div class="card-bg border border-navy-600 rounded-2xl p-4 md:p-6">
+    <div class="flex items-center space-x-2 mb-4">
+      <i data-feather="clock" class="w-5 h-5"></i>
+      <h3 class="text-lg md:text-xl font-semibold">Credit History</h3>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+      <select id="credit-status" class="px-4 py-2.5 rounded-lg input-dark text-sm w-full sm:w-auto">
+        <option value="">All Statuses</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <div class="relative w-full sm:w-auto">
+        <button id="credit-date-btn" class="w-full px-4 py-2.5 rounded-lg input-dark text-sm flex items-center justify-center space-x-2">
+          <i data-feather="calendar" class="w-4 h-4"></i>
+          <span id="credit-date-label">selectDateRange</span>
+        </button>
+        <input id="credit-start" type="date" class="hidden" />
+        <input id="credit-end" type="date" class="hidden" />
+      </div>
+    </div>
+    <div class="overflow-x-auto -mx-4 md:mx-0">
+      <div class="inline-block min-w-full align-middle">
+        <table class="min-w-full text-xs md:text-sm">
+          <thead>
+            <tr class="border-b border-navy-600">
+              <th class="text-left px-2 md:px-4 py-3 text-gray-400 font-medium whitespace-nowrap">Date</th>
+              <th class="text-left px-2 md:px-4 py-3 text-gray-400 font-medium whitespace-nowrap">Amount</th>
+              <th class="text-left px-2 md:px-4 py-3 text-gray-400 font-medium whitespace-nowrap">Method</th>
+              <th class="text-left px-2 md:px-4 py-3 text-gray-400 font-medium whitespace-nowrap">Status</th>
+              <th class="text-left px-2 md:px-4 py-3 text-gray-400 font-medium whitespace-nowrap hidden md:table-cell">Processed</th>
+              <th class="text-left px-2 md:px-4 py-3 text-gray-400 font-medium whitespace-nowrap hidden lg:table-cell">By</th>
+              <th class="text-left px-2 md:px-4 py-3 text-gray-400 font-medium whitespace-nowrap hidden lg:table-cell">Reason</th>
+            </tr>
+          </thead>
+          <tbody id="credit-history-body"></tbody>
+        </table>
+      </div>
+      <div id="credit-history-empty" class="text-center text-gray-400 py-12">noCreditHistoryFound</div>
+    </div>
+  </div>
+</div>

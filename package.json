@@ -1,0 +1,12 @@
+{
+  "name": "cellspot1",
+  "version": "1.0.0",
+  "description": "Dark-themed telecom dashboard inspired by Alfa U-Share (Lebanon) with: - **Login/Signup** (Firebase Auth, Email/Password) - **Profile** (read/update first/last name; phone locked) - **Open/Closed Services** (packages, purchase modal) - **Add Credit** (upload proof to Storage; request to Firestore) - **Credit History & Order History** (filters, tables) - **Persistent sidebar** (collapsible; icons-only when collapsed) - **Dark mode** (localStorage)",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
