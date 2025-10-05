@@ -628,9 +628,10 @@ async function applyPromoCode() {
       const promoData = promoDoc.data();
       
       if (promoData.code === code && promoData.active) {
-        promoCodeApplied = true;
-        promoDiscount = promoData.discount / 100; // Convert percentage to decimal
-        message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${promoData.discount}% discount on all packages</span>`;
+  promoCodeApplied = true;
+  // promoData.discount is stored as amount in LBP
+  promoDiscount = promoData.discount; // amount LBP
+  message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promoData.discount).toLocaleString()} LBP off on all packages</span>`;
         input.disabled = true;
         if (applyBtn) applyBtn.disabled = true;
         renderPackages(); // Re-render with discount
@@ -674,9 +675,9 @@ async function renderPackages() {
     
     container.innerHTML = "";
     packages.forEach((p, idx) => {
-      const originalPrice = p.priceLBP;
-      const discountedPrice = promoCodeApplied ? originalPrice * (1 - promoDiscount) : originalPrice;
-      const hasDiscount = promoCodeApplied;
+  const originalPrice = p.priceLBP;
+  const discountedPrice = promoCodeApplied ? Math.max(0, Math.round(originalPrice - promoDiscount)) : originalPrice;
+  const hasDiscount = promoCodeApplied;
       
       // Determine availability status
       const qty = p.quantity !== undefined ? p.quantity : 0;
@@ -703,7 +704,7 @@ async function renderPackages() {
           </svg>
         </div>
         ${availabilityBadge}
-        ${hasDiscount ? '<div class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">-' + (promoDiscount * 100) + '%</div>' : ''}
+  ${hasDiscount ? '<div class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">' + Number(promoDiscount).toLocaleString() + ' LBP off</div>' : ''}
         <div class="flex items-center space-x-2 mb-2 mt-6">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-7.24 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
@@ -775,9 +776,9 @@ async function applyAlfaPromoCode() {
       const promoData = promoDoc.data();
       
       if (promoData.code === code && promoData.active) {
-        alfaPromoCodeApplied = true;
-        alfaPromoDiscount = promoData.discount / 100; // Convert percentage to decimal
-        message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${promoData.discount}% discount on all packages</span>`;
+  alfaPromoCodeApplied = true;
+  alfaPromoDiscount = promoData.discount; // amount LBP
+  message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promoData.discount).toLocaleString()} LBP off on all packages</span>`;
         input.disabled = true;
         if (applyBtn) applyBtn.disabled = true;
         renderAlfaPackages(); // Re-render with discount
@@ -850,7 +851,7 @@ async function renderAlfaPackages() {
           </svg>
         </div>
         ${availabilityBadge}
-        ${hasDiscount ? '<div class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">-' + (alfaPromoDiscount * 100) + '%</div>' : ''}
+  ${hasDiscount ? '<div class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">' + Number(alfaPromoDiscount).toLocaleString() + ' LBP off</div>' : ''}
         <div class="flex items-center space-x-2 mb-2 mt-6">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M20 7h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 4h4v3h-4V4zm10 16H4V9h16v11z"/>
@@ -922,9 +923,9 @@ async function applyOpenPromoCode() {
       const promoData = promoDoc.data();
       
       if (promoData.code === code && promoData.active) {
-        openPromoCodeApplied = true;
-        openPromoDiscount = promoData.discount / 100; // Convert percentage to decimal
-        message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${promoData.discount}% discount on all packages</span>`;
+  openPromoCodeApplied = true;
+  openPromoDiscount = promoData.discount; // amount LBP
+  message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promoData.discount).toLocaleString()} LBP off on all packages</span>`;
         input.disabled = true;
         if (applyBtn) applyBtn.disabled = true;
         renderOpenPackages(); // Re-render with discount
@@ -1005,7 +1006,7 @@ async function renderOpenPackages() {
           </svg>
         </div>
         ${availabilityBadge}
-        ${hasDiscount ? '<div class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">-' + (openPromoDiscount * 100) + '%</div>' : ''}
+  ${hasDiscount ? '<div class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">' + Number(openPromoDiscount).toLocaleString() + ' LBP off</div>' : ''}
         <div class="flex items-center space-x-2 mb-2 mt-6">
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-7.24 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>

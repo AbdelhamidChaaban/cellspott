@@ -525,9 +525,9 @@ async function loadSettings() {
             <p class="text-xs text-gray-400 mt-1">This is the code customers will enter to get a discount</p>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-2">Discount Percentage</label>
-            <input type="number" id="promo-discount" min="0" max="100" placeholder="10" class="w-full px-4 py-2 rounded-lg input-dark" required>
-            <p class="text-xs text-gray-400 mt-1">Enter percentage (e.g., 10 for 10% off, 25 for 25% off)</p>
+            <label class="block text-sm font-medium mb-2">Discount Amount (LBP)</label>
+            <input type="number" id="promo-discount" min="0" step="1000" placeholder="50000" class="w-full px-4 py-2 rounded-lg input-dark" required>
+            <p class="text-xs text-gray-400 mt-1">Enter fixed amount in LBP to subtract from package price (e.g., 50000)</p>
           </div>
           <div class="flex items-center gap-2 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
             <i data-feather="info" class="w-5 h-5 text-blue-400"></i>
@@ -571,8 +571,9 @@ async function loadSavedSettings() {
         $("#current-promo-code").textContent = settings.code;
       }
       if (settings.discount !== undefined) {
+        // discount is stored as an amount in LBP
         $("#promo-discount").value = settings.discount;
-        $("#current-promo-discount").textContent = `${settings.discount}% discount`;
+        $("#current-promo-discount").textContent = `${Number(settings.discount).toLocaleString()} LBP discount`;
       }
       
       // Show current settings
@@ -595,13 +596,14 @@ async function savePromoSettings(e) {
     return;
   }
   
-  if (isNaN(discount) || discount < 0 || discount > 100) {
-    alert("Please enter a valid discount percentage (0-100)");
+  if (isNaN(discount) || discount < 0) {
+    alert("Please enter a valid discount amount in LBP (>= 0)");
     return;
   }
   
   try {
     // Save to Firebase
+    // Save discount as an amount in LBP
     await db.collection("settings").doc("promoCode").set({
       code: code,
       discount: discount,
@@ -611,11 +613,11 @@ async function savePromoSettings(e) {
     });
     
     // Update display
-    $("#current-promo-code").textContent = code;
-    $("#current-promo-discount").textContent = `${discount}% discount`;
+  $("#current-promo-code").textContent = code;
+  $("#current-promo-discount").textContent = `${Number(discount).toLocaleString()} LBP discount`;
     $("#promo-current-settings").classList.remove("hidden");
     
-    alert(`Promo code saved successfully!\n\nCode: ${code}\nDiscount: ${discount}%\n\nCustomers can now use this code!`);
+  alert(`Promo code saved successfully!\n\nCode: ${code}\nDiscount: ${Number(discount).toLocaleString()} LBP\n\nCustomers can now use this code!`);
   } catch (error) {
     console.error("Error saving promo code:", error);
     alert("Failed to save promo code settings");

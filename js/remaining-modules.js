@@ -160,6 +160,25 @@ I'll send you the proof image.`;
   });
 }
 
+// Delegated fallback to ensure #validity-apply-promo-btn triggers handler even if added later
+try {
+  if (!window._validityPromoDelegationAdded) {
+    document.addEventListener('click', (e) => {
+      const btn = e.target && e.target.closest ? e.target.closest('#validity-apply-promo-btn') : null;
+      if (btn) {
+        e.preventDefault();
+        if (typeof applyValidityPromoCode === 'function') {
+          console.debug('Delegated: invoking applyValidityPromoCode');
+          applyValidityPromoCode();
+        }
+      }
+    });
+    window._validityPromoDelegationAdded = true;
+  }
+} catch (err) {
+  console.warn('Could not add delegated validity promo handler', err);
+}
+
 // ---------- Alfa Gifts Purchase Modal ----------
 let currentAlfaPurchase = null;
 function openAlfaPurchaseModal(pkg) {
@@ -631,6 +650,17 @@ I'll send you the proof image.`;
 async function renderValidityPackages() {
   const container = $("#validity-packages-container");
   if (!container) return;
+  // Ensure promo UI exists for validity page (inject if missing)
+  try {
+    const promoInput = document.querySelector('#validity-promo-code-input');
+    if (!promoInput) {
+      const promoHtml = `\n  <!-- Promo Code Section -->\n  <div class="mb-6 max-w-md">\n    <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>\n    <div class="flex gap-3">\n      <input \n        id="validity-promo-code-input" \n        type="text" \n        placeholder="Enter promo code" \n        class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"\n      />\n      <button \n        id="validity-apply-promo-btn" \n        class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"\n      >\n        Apply\n      </button>\n    </div>\n    <div id="validity-promo-message" class="mt-2 text-sm"></div>\n  </div>\n`;
+      container.insertAdjacentHTML('beforebegin', promoHtml);
+      console.debug('Inserted promo block for validity page');
+    }
+  } catch (err) {
+    console.warn('Could not ensure validity promo block', err);
+  }
   
   try {
     const packagesSnap = await db.collection("packages")
@@ -650,6 +680,10 @@ async function renderValidityPackages() {
       packages.push({ id: doc.id, ...doc.data() });
     });
     
+  // Determine validity promo state (promoDiscount is an amount in LBP)
+  const promoApplied = typeof validityPromoCodeApplied !== 'undefined' ? validityPromoCodeApplied : false;
+  const promoDiscount = typeof validityPromoDiscount !== 'undefined' ? validityPromoDiscount : 0;
+
     packages.forEach(pkg => {
       const qty = pkg.quantity !== undefined ? pkg.quantity : 0;
       let buttonDisabled = '';
@@ -659,6 +693,11 @@ async function renderValidityPackages() {
         buttonDisabled = 'disabled';
         buttonClass = 'bg-gray-600 cursor-not-allowed text-gray-400';
       }
+
+      const originalPrice = pkg.priceLBP;
+  // Subtract fixed LBP amount and never go below 0
+  const discountedPrice = promoApplied ? Math.max(0, Math.round(originalPrice - promoDiscount)) : originalPrice;
+      const hasDiscount = promoApplied;
       
       const cardWrapper = document.createElement("div");
       cardWrapper.className = "package-card-wrapper";
@@ -672,9 +711,10 @@ async function renderValidityPackages() {
             <div class="text-sm text-gray-400">Extension</div>
           </div>
           <div class="text-center mb-4">
-            <div class="text-2xl font-bold text-white">${formatLBP(pkg.priceLBP)}</div>
+            <div class="text-2xl font-bold text-white ${hasDiscount ? 'text-green-400' : ''}">${formatLBP(discountedPrice)}</div>
+            ${hasDiscount ? `<div class="text-sm text-gray-400 line-through">${formatLBP(originalPrice)}</div>` : ''}
           </div>
-          <button ${buttonDisabled} class="validity-pkg-buy w-full py-3 rounded-lg ${buttonClass} text-white font-semibold transition-all hover:scale-105" data-package="${pkg.description}" data-price="${pkg.priceLBP}">
+          <button ${buttonDisabled} class="validity-pkg-buy w-full py-3 rounded-lg ${buttonClass} text-white font-semibold transition-all hover:scale-105" data-package="${pkg.description}" data-price="${discountedPrice}">
             ${qty === 0 ? 'Sold Out' : 'Purchase'}
           </button>
         </div>
@@ -694,6 +734,15 @@ async function renderValidityPackages() {
         });
       });
     });
+    // Wire promo apply button and Enter key
+    try {
+      const applyBtn = $("#validity-apply-promo-btn");
+      if (applyBtn) applyBtn.addEventListener('click', applyValidityPromoCode);
+      const promoInput = $("#validity-promo-code-input");
+      if (promoInput) promoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyValidityPromoCode(); });
+    } catch (err) {
+      console.warn('Failed to wire validity promo handlers in renderValidityPackages', err);
+    }
     
   } catch (error) {
     console.error("Error loading validity packages:", error);
@@ -1127,6 +1176,7 @@ async function loadCreditHistory(uid) {
       show(empty);
     }
   }
+
 }
 
 function initCreditHistory(uid) {
@@ -1559,6 +1609,27 @@ async function renderStreamingPackages(serviceName) {
     console.error("Container not found for", serviceName);
     return;
   }
+
+  // Ensure promo UI exists for this streaming page. Some fallback/embedded pages
+  // or cached HTML may be missing the promo block; inject it once if absent.
+  try {
+    let prefix = "";
+    if (serviceName === "Netflix") prefix = "netflix";
+    else if (serviceName === "Shahed") prefix = "shahed";
+    else if (serviceName === "OSN+") prefix = "osn";
+
+    if (prefix) {
+      const promoInput = document.querySelector(`#${prefix}-promo-code-input`);
+      if (!promoInput) {
+        const promoHtml = `\n    <!-- Promo Code Section -->\n    <div class="mb-6 max-w-md">\n      <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>\n      <div class="flex gap-3">\n        <input \n          id="${prefix}-promo-code-input" \n          type="text" \n          placeholder="Enter promo code" \n          class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"\n        />\n        <button \n          id="${prefix}-apply-promo-btn" \n          class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"\n        >\n          Apply\n        </button>\n      </div>\n      <div id="${prefix}-promo-message" class="mt-2 text-sm"></div>\n    </div>\n`;
+        // Insert the promo block before the packages container
+        container.insertAdjacentHTML('beforebegin', promoHtml);
+        console.debug(`Inserted promo block for streaming service: ${serviceName}`);
+      }
+    }
+  } catch (err) {
+    console.warn('Could not ensure promo block for', serviceName, err);
+  }
   
   try {
     const packagesSnap = await db.collection("packages")
@@ -1589,7 +1660,26 @@ async function renderStreamingPackages(serviceName) {
     if (serviceName === "Netflix") iconColor = "text-red-400";
     else if (serviceName === "Shahed") iconColor = "text-purple-400";
     
+    // Determine which promo code applies
+    let promoApplied = false;
+    let promoDiscount = 0;
+    if (serviceName === "Netflix") {
+      promoApplied = netflixPromoCodeApplied;
+      promoDiscount = netflixPromoDiscount;
+    } else if (serviceName === "Shahed") {
+      promoApplied = shahedPromoCodeApplied;
+      promoDiscount = shahedPromoDiscount;
+    } else if (serviceName === "OSN+") {
+      promoApplied = osnPromoCodeApplied;
+      promoDiscount = osnPromoDiscount;
+    }
+    
     packages.forEach(pkg => {
+  const originalPrice = pkg.priceLBP;
+  // promoDiscount is an amount in LBP for streaming promos as well
+  const discountedPrice = promoApplied ? Math.max(0, Math.round(originalPrice - promoDiscount)) : originalPrice;
+      const hasDiscount = promoApplied;
+      
       const qty = pkg.quantity !== undefined ? pkg.quantity : 0;
       let buttonDisabled = '';
       let buttonClass = buttonColor;
@@ -1619,15 +1709,17 @@ async function renderStreamingPackages(serviceName) {
       cardWrapper.className = "package-card-wrapper";
       cardWrapper.innerHTML = `
         <div class="package-card-inner flex flex-col">
+          ${hasDiscount ? '<div class="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">' + Number(promoDiscount).toLocaleString() + ' LBP off</div>' : ''}
           <div class="text-center mb-4">
             ${iconSvg}
             <div class="text-2xl font-bold text-white mb-1">${pkg.description || "Package"}</div>
             <div class="text-sm text-gray-400">${serviceName}</div>
           </div>
           <div class="text-center mb-4">
-            <div class="text-2xl font-bold text-white">${formatLBP(pkg.priceLBP)}</div>
+            ${hasDiscount ? `<div class="text-sm text-gray-500 line-through">${formatLBP(originalPrice)}</div>` : ''}
+            <div class="text-2xl font-bold text-white ${hasDiscount ? 'text-green-400' : ''}">${formatLBP(discountedPrice)}</div>
           </div>
-          <button ${buttonDisabled} class="streaming-pkg-buy w-full py-3 rounded-lg ${buttonClass} text-white font-semibold transition-all hover:scale-105" data-service="${serviceName}" data-package="${pkg.description}" data-price="${pkg.priceLBP}">
+          <button ${buttonDisabled} class="streaming-pkg-buy w-full py-3 rounded-lg ${buttonClass} text-white font-semibold transition-all hover:scale-105" data-service="${serviceName}" data-package="${pkg.description}" data-price="${Math.round(discountedPrice)}">
             ${qty === 0 ? 'Sold Out' : 'Purchase'}
           </button>
         </div>
@@ -1649,6 +1741,48 @@ async function renderStreamingPackages(serviceName) {
         });
       });
     });
+    
+    // Add promo code button handlers based on service
+    if (serviceName === "Netflix") {
+      const applyBtn = $("#netflix-apply-promo-btn");
+      if (applyBtn) {
+        applyBtn.addEventListener("click", applyNetflixPromoCode);
+      }
+      const promoInput = $("#netflix-promo-code-input");
+      if (promoInput) {
+        promoInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            applyNetflixPromoCode();
+          }
+        });
+      }
+    } else if (serviceName === "Shahed") {
+      const applyBtn = $("#shahed-apply-promo-btn");
+      if (applyBtn) {
+        applyBtn.addEventListener("click", applyShahedPromoCode);
+      }
+      const promoInput = $("#shahed-promo-code-input");
+      if (promoInput) {
+        promoInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            applyShahedPromoCode();
+          }
+        });
+      }
+    } else if (serviceName === "OSN+") {
+      const applyBtn = $("#osn-apply-promo-btn");
+      if (applyBtn) {
+        applyBtn.addEventListener("click", applyOsnPromoCode);
+      }
+      const promoInput = $("#osn-promo-code-input");
+      if (promoInput) {
+        promoInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            applyOsnPromoCode();
+          }
+        });
+      }
+    }
     
   } catch (error) {
     console.error("Error loading streaming packages:", error);

@@ -503,6 +503,26 @@ window.PAGES = {
       </div>
       <p class="text-sm text-gray-400 mb-8">Choose your validity extension package</p>
       
+      <!-- Promo Code Section -->
+      <div class="mb-6 max-w-md">
+        <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>
+        <div class="flex gap-3">
+          <input 
+            id="validity-promo-code-input" 
+            type="text" 
+            placeholder="Enter promo code" 
+            class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
+          />
+          <button 
+            id="validity-apply-promo-btn" 
+            class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+          >
+            Apply
+          </button>
+        </div>
+        <div id="validity-promo-message" class="mt-2 text-sm"></div>
+      </div>
+
       <div id="validity-packages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div class="col-span-full text-center py-8 text-gray-400">Loading packages...</div>
       </div>
@@ -664,6 +684,26 @@ window.PAGES = {
     </div>
     <p class="text-sm text-gray-400 mb-8">Choose your Netflix subscription plan</p>
     
+    <!-- Promo Code Section -->
+    <div class="mb-6 max-w-md">
+      <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>
+      <div class="flex gap-3">
+        <input 
+          id="netflix-promo-code-input" 
+          type="text" 
+          placeholder="Enter promo code" 
+          class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
+        />
+        <button 
+          id="netflix-apply-promo-btn" 
+          class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+        >
+          Apply
+        </button>
+      </div>
+      <div id="netflix-promo-message" class="mt-2 text-sm"></div>
+    </div>
+
     <div id="netflix-packages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="col-span-full text-center py-8 text-gray-400">Loading packages...</div>
     </div>
@@ -687,6 +727,26 @@ window.PAGES = {
     </div>
     <p class="text-sm text-gray-400 mb-8">Choose your Shahed subscription plan</p>
     
+    <!-- Promo Code Section -->
+    <div class="mb-6 max-w-md">
+      <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>
+      <div class="flex gap-3">
+        <input 
+          id="shahed-promo-code-input" 
+          type="text" 
+          placeholder="Enter promo code" 
+          class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
+        />
+        <button 
+          id="shahed-apply-promo-btn" 
+          class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+        >
+          Apply
+        </button>
+      </div>
+      <div id="shahed-promo-message" class="mt-2 text-sm"></div>
+    </div>
+
     <div id="shahed-packages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="col-span-full text-center py-8 text-gray-400">Loading packages...</div>
     </div>
@@ -710,6 +770,26 @@ window.PAGES = {
     </div>
     <p class="text-sm text-gray-400 mb-8">Choose your OSN+ subscription plan</p>
     
+    <!-- Promo Code Section -->
+    <div class="mb-6 max-w-md">
+      <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>
+      <div class="flex gap-3">
+        <input 
+          id="osn-promo-code-input" 
+          type="text" 
+          placeholder="Enter promo code" 
+          class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
+        />
+        <button 
+          id="osn-apply-promo-btn" 
+          class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+        >
+          Apply
+        </button>
+      </div>
+      <div id="osn-promo-message" class="mt-2 text-sm"></div>
+    </div>
+
     <div id="osn-packages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <div class="col-span-full text-center py-8 text-gray-400">Loading packages...</div>
     </div>

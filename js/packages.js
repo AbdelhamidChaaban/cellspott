@@ -31,9 +31,10 @@ async function renderPackages() {
     
     container.innerHTML = "";
     packages.forEach((p, idx) => {
-      const originalPrice = p.priceLBP;
-      const discountedPrice = promoCodeApplied ? originalPrice * (1 - promoDiscount) : originalPrice;
-      const hasDiscount = promoCodeApplied;
+  const originalPrice = p.priceLBP;
+  // promoDiscount is an amount in LBP
+  const discountedPrice = promoCodeApplied ? Math.max(0, Math.round(originalPrice - promoDiscount)) : originalPrice;
+  const hasDiscount = promoCodeApplied;
       
       // Determine availability status
       const qty = p.quantity !== undefined ? p.quantity : 0;
@@ -56,7 +57,7 @@ async function renderPackages() {
       card.innerHTML = `
         <div class="package-card-inner flex flex-col">
           ${availabilityBadge}
-          ${hasDiscount ? '<div class="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">-' + (promoDiscount * 100) + '%</div>' : ''}
+          ${hasDiscount ? '<div class="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">' + Number(promoDiscount).toLocaleString() + ' LBP off</div>' : ''}
           
           <div class="text-center mb-4">
             <svg class="w-16 h-16 mx-auto mb-3 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
@@ -139,8 +140,8 @@ async function renderAlfaPackages() {
     
     container.innerHTML = "";
     packages.forEach((p, idx) => {
-      const originalPrice = p.priceLBP;
-      const discountedPrice = alfaPromoCodeApplied ? originalPrice * (1 - alfaPromoDiscount) : originalPrice;
+  const originalPrice = p.priceLBP;
+  const discountedPrice = alfaPromoCodeApplied ? Math.max(0, Math.round(originalPrice - alfaPromoDiscount)) : originalPrice;
       const hasDiscount = alfaPromoCodeApplied;
       
       // Determine availability status
@@ -164,7 +165,7 @@ async function renderAlfaPackages() {
       card.innerHTML = `
         <div class="package-card-inner flex flex-col">
           ${availabilityBadge}
-          ${hasDiscount ? '<div class="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">-' + (alfaPromoDiscount * 100) + '%</div>' : ''}
+          ${hasDiscount ? '<div class="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">' + Number(alfaPromoDiscount).toLocaleString() + ' LBP off</div>' : ''}
           <div class="text-center mb-4">
             <svg class="w-16 h-16 mx-auto mb-3 text-purple-400" fill="currentColor" viewBox="0 0 24 24">
               <path d="M20 7h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v3H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 4h4v3h-4V4zm10 16H4V9h16v11z"/>
@@ -252,8 +253,8 @@ async function renderOpenPackages() {
     
     container.innerHTML = "";
     packages.forEach((p, idx) => {
-      const originalPrice = p.priceLBP;
-      const discountedPrice = openPromoCodeApplied ? originalPrice * (1 - openPromoDiscount) : originalPrice;
+  const originalPrice = p.priceLBP;
+  const discountedPrice = openPromoCodeApplied ? Math.max(0, Math.round(originalPrice - openPromoDiscount)) : originalPrice;
       const hasDiscount = openPromoCodeApplied;
       
       // Determine availability status
@@ -277,7 +278,7 @@ async function renderOpenPackages() {
       card.innerHTML = `
         <div class="package-card-inner flex flex-col">
           ${availabilityBadge}
-          ${hasDiscount ? '<div class="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">-' + (openPromoDiscount * 100) + '%</div>' : ''}
+          ${hasDiscount ? '<div class="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">' + Number(openPromoDiscount).toLocaleString() + ' LBP off</div>' : ''}
           <div class="text-center mb-4">
             <svg class="w-16 h-16 mx-auto mb-3 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
               <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
