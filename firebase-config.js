@@ -5,7 +5,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCkctXy17dOjUJp14qyj2dkJP0pe9nmNlY",
   authDomain: "cellspot-cb050.firebaseapp.com",
   projectId: "cellspot-cb050",
-  storageBucket: "cellspot-cb050.firebasestorage.app",
+  storageBucket: "cellspot-cb050.appspot.com",
   messagingSenderId: "237744317937",
   appId: "1:237744317937:web:0af5c423ceb10770385050",
   measurementId: "G-ESCLEGP1X9"

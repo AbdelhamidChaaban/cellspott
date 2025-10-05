@@ -7,13 +7,13 @@ const firebaseConfig = {
   apiKey: "AIzaSyCkctXy17dOjUJp14qyj2dkJP0pe9nmNlY",
   authDomain: "cellspot-cb050.firebaseapp.com",
   projectId: "cellspot-cb050",
-  storageBucket: "cellspot-cb050.firebasestorage.app",
+  storageBucket: "cellspot-cb050.appspot.com",
   messagingSenderId: "237744317937",
   appId: "1:237744317937:web:0af5c423ceb10770385050",
   measurementId: "G-ESCLEGP1X9"
 };
 
-let app, auth, db, storage;
+var app, auth, db, storage;
 (function initFirebase() {
   try {
     if (!firebase.apps.length) {
@@ -21,10 +21,19 @@ let app, auth, db, storage;
     } else {
       app = firebase.app();
     }
-    auth = firebase.auth();
-    db = firebase.firestore();
-    storage = firebase.storage();
+
+    // Expose services as globals so other non-module scripts can access them
+    window.auth = firebase.auth();
+    window.db = firebase.firestore();
+    window.storage = firebase.storage();
+
+    // Also mirror to local vars for internal use
+    auth = window.auth;
+    db = window.db;
+    storage = window.storage;
+
+    console.log("Firebase initialized successfully (auth, db, storage available on window)");
   } catch (e) {
-    console.warn("Firebase init error. Check your config in firebase-init.js", e);
+    console.error("Firebase init error. Check your config in js/firebase-init.js", e);
   }
 })();
