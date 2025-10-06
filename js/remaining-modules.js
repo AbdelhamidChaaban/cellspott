@@ -126,17 +126,10 @@ function initPurchaseModal(uid) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       
-      // Decrease package quantity if packageId exists
-      if (currentPurchase.packageId) {
-        try {
-          const packageRef = db.collection("packages").doc(currentPurchase.packageId);
-          await packageRef.update({
-            quantity: firebase.firestore.FieldValue.increment(-1)
-          });
-        } catch (error) {
-          console.error("Error decreasing package quantity:", error);
-        }
-      }
+      // NOTE: Do not decrease package quantity here. Quantity should be adjusted
+      // only after an admin approves the order to avoid reserving stock for
+      // unapproved orders. The admin approval handler will decrement package
+      // quantity and mark the order with `stockAdjusted: true`.
       
       // Prepare message for WhatsApp
       const message = `New Purchase Request

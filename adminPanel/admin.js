@@ -406,7 +406,7 @@ async function loadOrders() {
           
           <div>
             <label class="block text-sm font-medium mb-2">Search</label>
-            <input id="order-search" oninput="refreshOrders()" type="text" placeholder="Phone number..." class="w-full px-4 py-2 rounded-lg input-dark text-sm">
+            <input id="order-search" oninput="refreshOrders()" type="text" placeholder="Search by name or number" class="w-full px-4 py-2 rounded-lg input-dark text-sm">
           </div>
         </div>
       </div>
@@ -442,21 +442,47 @@ async function loadOrders() {
   const exportBtn = $("#admin-export-orders-btn");
   if (exportBtn) {
     exportBtn.addEventListener("click", async () => {
-      await exportAllOrdersToExcel();
+      const dateFilter = document.getElementById('order-date-filter')?.value || 'all';
+      await exportAllOrdersToExcel(dateFilter);
     });
   }
   
   await refreshOrders();
 }
 
-async function exportAllOrdersToExcel() {
+async function exportAllOrdersToExcel(dateFilter = 'all') {
   try {
-    const ordersSnap = await db.collection("orders")
-      .orderBy("createdAt", "desc")
-      .get();
-    
+    // Determine date range based on filter
+    let startDate = null;
+    let endDate = null;
+    const now = new Date();
+
+    if (dateFilter === 'today') {
+      startDate = new Date(); startDate.setHours(0,0,0,0);
+      endDate = new Date(); endDate.setHours(23,59,59,999);
+    } else if (dateFilter === 'yesterday') {
+      startDate = new Date(); startDate.setDate(startDate.getDate() - 1); startDate.setHours(0,0,0,0);
+      endDate = new Date(); endDate.setDate(endDate.getDate() - 1); endDate.setHours(23,59,59,999);
+    } else if (dateFilter === 'week') {
+      startDate = new Date(); startDate.setDate(startDate.getDate() - 7); startDate.setHours(0,0,0,0);
+      endDate = new Date(); endDate.setHours(23,59,59,999);
+    } else if (dateFilter === 'month') {
+      startDate = new Date(); startDate.setMonth(startDate.getMonth() - 1); startDate.setHours(0,0,0,0);
+      endDate = new Date(); endDate.setHours(23,59,59,999);
+    }
+
+    let query = db.collection("orders").orderBy("createdAt", "desc");
+    if (startDate && endDate) {
+      query = db.collection("orders")
+        .where('createdAt', '>=', startDate)
+        .where('createdAt', '<=', endDate)
+        .orderBy('createdAt', 'desc');
+    }
+
+    const ordersSnap = await query.get();
+
     if (ordersSnap.empty) {
-      alert("No orders to export");
+      alert("No orders to export for the selected date range");
       return;
     }
     
@@ -501,7 +527,13 @@ async function exportAllOrdersToExcel() {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", `all_orders_${new Date().toISOString().split('T')[0]}.csv`);
+    const filenameDate = (() => {
+      if (dateFilter === 'today' || dateFilter === 'yesterday') return (startDate || new Date()).toISOString().split('T')[0];
+      if (dateFilter === 'week') return `week_${new Date().toISOString().split('T')[0]}`;
+      if (dateFilter === 'month') return `month_${new Date().toISOString().split('T')[0]}`;
+      return `all_${new Date().toISOString().split('T')[0]}`;
+    })();
+    link.setAttribute("download", `orders_${dateFilter}_${filenameDate}.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -606,10 +638,18 @@ async function refreshOrders() {
     }
     
     if (searchQuery) {
-      orders = orders.filter(o => 
-        (o.phone && o.phone.includes(searchQuery)) ||
-        (o.secondaryPhone && o.secondaryPhone.includes(searchQuery))
-      );
+      const isNumericSearch = /^\d+$/.test(searchQuery);
+      if (isNumericSearch) {
+        // Phone search (existing behavior)
+        orders = orders.filter(o => 
+          (o.phone && o.phone.includes(searchQuery)) ||
+          (o.secondaryPhone && o.secondaryPhone.includes(searchQuery))
+        );
+      } else {
+        // Name/username search - we'll filter after we resolve user docs
+        // mark that we need name filtering
+        orders = orders; // keep orders for now; actual filtering below after fetching userDocs
+      }
     }
     
     // Render orders
@@ -627,6 +667,42 @@ async function refreshOrders() {
       order.uid ? db.collection("users").doc(order.uid).get().catch(() => null) : Promise.resolve(null)
     );
     const userDocs = await Promise.all(userPromises);
+
+    // If a non-numeric search was provided, filter orders by username or full name
+    if (searchQuery && !/^[0-9]+$/.test(searchQuery)) {
+      const qLower = searchQuery.toLowerCase();
+      const filteredOrders = [];
+      const filteredUserDocs = [];
+
+      for (let i = 0; i < orders.length; i++) {
+        const order = orders[i];
+        const userDoc = userDocs[i];
+        let matched = false;
+
+        if (userDoc && userDoc.exists) {
+          const u = userDoc.data();
+          const username = (u.username || "").toString().toLowerCase();
+          const fullName = `${(u.firstName||"").toString()} ${(u.lastName||"").toString()}`.toLowerCase().trim();
+
+          if (username && username.includes(qLower)) matched = true;
+          if (!matched && fullName && fullName.includes(qLower)) matched = true;
+        }
+
+        // Also allow matching by email
+        if (!matched && order.email && order.email.toLowerCase().includes(qLower)) matched = true;
+
+        if (matched) {
+          filteredOrders.push(order);
+          filteredUserDocs.push(userDoc);
+        }
+      }
+
+      // Replace orders and userDocs with filtered lists
+      orders = filteredOrders;
+      // keep userDocs aligned with orders for rendering
+      userDocs.length = 0;
+      Array.prototype.push.apply(userDocs, filteredUserDocs);
+    }
     
     // Build all rows HTML first
     const rowsHTML = orders.map((order, index) => {
@@ -684,6 +760,10 @@ async function refreshOrders() {
               ` : `
                 <span class="text-gray-500 text-xs">No actions</span>
               `}
+              <!-- Delete button always available to admin -->
+              <button onclick="deleteOrder('${order.id}')" class="px-3 py-1 rounded bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium">
+                Delete
+              </button>
             </div>
           </td>
         </tr>
@@ -1090,12 +1170,44 @@ async function approveOrder(orderId) {
   if (!confirm("Are you sure you want to approve this order?")) return;
   
   try {
-    await db.collection("orders").doc(orderId).update({
-      status: "approved",
-      approvedBy: currentAdmin.username,
-      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    const orderRef = db.collection("orders").doc(orderId);
+    await db.runTransaction(async (tx) => {
+      // Read order first
+      const orderSnap = await tx.get(orderRef);
+      if (!orderSnap.exists) throw new Error('Order not found');
+      const orderData = orderSnap.data();
+
+      // If we need to adjust package stock, read the package doc as well (reads must happen before writes)
+      let pkgSnap = null;
+      let packageRef = null;
+      let shouldAdjustStock = false;
+
+      if (orderData.packageId && !orderData.stockAdjusted) {
+        packageRef = db.collection('packages').doc(orderData.packageId);
+        pkgSnap = await tx.get(packageRef);
+        shouldAdjustStock = pkgSnap.exists;
+      }
+
+      // Now perform writes
+      const orderUpdate = {
+        status: "approved",
+        approvedBy: currentAdmin.username,
+        approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      if (shouldAdjustStock) {
+        orderUpdate.stockAdjusted = true;
+      }
+
+      tx.update(orderRef, orderUpdate);
+
+      if (shouldAdjustStock && pkgSnap) {
+        const currentQty = pkgSnap.data().quantity || 0;
+        const newQty = Math.max(0, currentQty - 1);
+        tx.update(packageRef, { quantity: newQty });
+      }
     });
-    
+
     alert("Order approved successfully!");
     await refreshOrders();
   } catch (error) {
@@ -1120,6 +1232,19 @@ async function rejectOrder(orderId) {
   } catch (error) {
     console.error("Error rejecting order:", error);
     alert("Failed to reject order");
+  }
+}
+
+async function deleteOrder(orderId) {
+  if (!confirm("Are you sure you want to permanently delete this order? This action cannot be undone.")) return;
+
+  try {
+    await db.collection("orders").doc(orderId).delete();
+    alert("Order deleted successfully");
+    await refreshOrders();
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    alert("Failed to delete order");
   }
 }
 
