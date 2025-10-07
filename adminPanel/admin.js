@@ -818,9 +818,18 @@ async function loadUsers() {
         <h2 class="text-2xl font-bold">Users Management</h2>
       </div>
       
-      <!-- Search -->
+      <!-- Search + Balance Date -->
       <div class="card-bg border border-navy-600 rounded-xl p-6">
-        <input id="user-search" oninput="refreshUsers()" type="text" placeholder="Search by ID or phone number..." class="w-full px-4 py-2 rounded-lg input-dark">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2">
+            <input id="user-search" oninput="refreshUsers()" type="text" placeholder="Search by ID, name, email or phone..." class="w-full px-4 py-2 rounded-lg input-dark">
+          </div>
+          <div>
+            <label class="block text-sm text-gray-400 mb-2">Balances as of</label>
+            <input id="user-balance-date" onchange="refreshUsers()" type="date" class="w-full px-4 py-2 rounded-lg input-dark text-sm">
+            <p class="text-xs text-gray-400 mt-2">Shown = stored balance + approved credits (up to date) - approved orders (up to date)</p>
+          </div>
+        </div>
       </div>
       
       <!-- Users Table -->
@@ -855,8 +864,20 @@ async function refreshUsers() {
   try {
     console.log("Loading users...");
     const searchQuery = $("#user-search")?.value.trim().toLowerCase() || "";
-    
-    const usersSnap = await db.collection("users").get();
+    // Determine balance cutoff date (end of selected day). If empty -> all time
+    const dateVal = $("#user-balance-date")?.value || "";
+    let balanceEndDate = null;
+    if (dateVal) {
+      balanceEndDate = new Date(dateVal);
+      balanceEndDate.setHours(23, 59, 59, 999);
+    }
+
+    // Fetch users, credit requests and orders (we'll filter statuses client-side to support variants)
+    const [usersSnap, creditSnap, ordersSnap] = await Promise.all([
+      db.collection("users").get(),
+      db.collection("creditRequests").get(),
+      db.collection("orders").get()
+    ]);
     const tbody = $("#users-table-body");
     
     console.log("Users found:", usersSnap.size);
@@ -871,17 +892,19 @@ async function refreshUsers() {
     usersSnap.forEach(doc => {
       const user = doc.data();
       const uid = doc.id;
-      
-      // Apply search filter
+
+      // Apply search filter (id, phone, name, email)
       if (searchQuery) {
         const matchesId = uid.toLowerCase().includes(searchQuery);
-        const matchesPhone = (user.phone || '').includes(searchQuery);
-        
-        if (!matchesId && !matchesPhone) {
+        const matchesPhone = (user.phone || '').toLowerCase().includes(searchQuery);
+        const matchesEmail = (user.email || '').toLowerCase().includes(searchQuery);
+        const matchesName = (`${user.firstName || ''} ${user.lastName || ''}`).toLowerCase().includes(searchQuery);
+
+        if (!matchesId && !matchesPhone && !matchesEmail && !matchesName) {
           return; // Skip this user
         }
       }
-      
+
       users.push({ uid, ...user });
     });
     
@@ -890,6 +913,50 @@ async function refreshUsers() {
       return;
     }
     
+    // Debug: log fetch sizes
+    console.log('refreshUsers: usersSnap.size=', usersSnap.size, 'creditSnap.size=', creditSnap.size, 'ordersSnap.size=', ordersSnap.size, 'balanceEndDate=', balanceEndDate);
+
+    // Aggregate approved credit requests up to the selected date to compute historical credits
+    const creditSums = {}; // uid -> sum
+    creditSnap.forEach(doc => {
+      const d = doc.data();
+      const uid = d.uid;
+      // Only count credit requests that are completed/approved by admin. Accept common status variants
+      const status = (d.status || '').toString().toLowerCase();
+      const acceptedStatuses = ['approved', 'processed', 'completed', 'paid'];
+      if (!acceptedStatuses.includes(status)) return;
+      // Determine processed timestamp (fallback to requestDate if processedDate missing)
+      const processedTs = (d.processedDate && d.processedDate.toDate) ? d.processedDate.toDate() : (d.requestDate && d.requestDate.toDate ? d.requestDate.toDate() : null);
+      if (!processedTs) return;
+      if (balanceEndDate && processedTs > balanceEndDate) return; // ignore later
+      creditSums[uid] = (creditSums[uid] || 0) + (Number(d.amountLBP) || 0);
+    });
+
+    // Aggregate approved orders (spent amounts) up to the selected date
+    const spentSums = {}; // uid -> sum spent
+    ordersSnap.forEach(doc => {
+      const d = doc.data();
+      const uid = d.uid;
+      // Only count orders that are approved/paid/completed
+      const status = (d.status || '').toString().toLowerCase();
+      const acceptedOrderStatuses = ['approved', 'completed', 'paid'];
+      if (!acceptedOrderStatuses.includes(status)) return;
+      // Prefer approvedAt/processedAt timestamps, fallback to createdAt
+      const createdTs = (d.approvedAt && d.approvedAt.toDate) ? d.approvedAt.toDate() : ((d.createdAt && d.createdAt.toDate) ? d.createdAt.toDate() : null);
+      if (!createdTs) return;
+      if (balanceEndDate && createdTs > balanceEndDate) return; // ignore later
+      // Only consider priceLBP as spent amount
+      const price = Number(d.priceLBP) || 0;
+      spentSums[uid] = (spentSums[uid] || 0) + price;
+    });
+
+    // Debug aggregates for first few users
+    const sampleUsers = users.slice(0, 5).map(u => u.uid);
+    console.log('refreshUsers: sample user ids:', sampleUsers);
+    sampleUsers.forEach(uid => {
+      console.log('user', uid, 'credits=', creditSums[uid] || 0, 'spent=', spentSums[uid] || 0, 'stored=', (users.find(x=>x.uid===uid)||{}).balanceLBP);
+    });
+
     let html = '';
     let idCounter = 1;
     users.forEach(user => {
@@ -906,13 +973,19 @@ async function refreshUsers() {
         ? `<button onclick="unblockUser('${uid}')" class="px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-medium">Unblock</button>`
         : `<button onclick="blockUser('${uid}')" class="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium">Block</button>`;
       
+  // Compute balance as of selected date: stored balance + approved credits up to date - approved orders spent up to date
+  const stored = Number(user.balanceLBP) || 0;
+  const credits = Number(creditSums[uid] || 0);
+  const spent = Number(spentSums[uid] || 0);
+  const balanceAsOf = stored + credits - spent;
+
       html += `
         <tr class="border-b border-navy-700 hover:bg-navy-800">
           <td class="px-4 py-3 text-sm font-medium">${idCounter}</td>
           <td class="px-4 py-3">${user.firstName || ''} ${user.lastName || ''}</td>
           <td class="px-4 py-3 text-sm text-gray-400">${user.email || ''}</td>
           <td class="px-4 py-3 text-sm">${user.phone || ''}</td>
-          <td class="px-4 py-3 text-sm">${formatLBP(user.balanceLBP || 0)}</td>
+          <td class="px-4 py-3 text-sm" style="tw-content: ''">${formatLBP(balanceAsOf || 0)}</td>
           <td class="px-4 py-3">${statusBadge}</td>
           <td class="px-4 py-3">${actionButton}</td>
         </tr>

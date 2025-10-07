@@ -426,8 +426,15 @@ async function refreshUsers() {
   try {
     const searchQuery = $("#user-search")?.value.trim().toLowerCase() || "";
     
-    const usersSnap = await db.collection("users").get();
-    
+    // Fetch users, creditRequests and orders to compute balances
+    const [usersSnap, creditSnap, ordersSnap] = await Promise.all([
+      db.collection("users").get(),
+      db.collection("creditRequests").get(),
+      db.collection("orders").get()
+    ]);
+
+    console.log('admin-features.refreshUsers: users=', usersSnap.size, 'credits=', creditSnap.size, 'orders=', ordersSnap.size);
+
     let users = [];
     usersSnap.forEach(doc => {
       users.push({ id: doc.id, ...doc.data() });
@@ -459,6 +466,29 @@ async function refreshUsers() {
     
     tbody.innerHTML = "";
     
+    // Aggregate credits and spent across all documents (no date filter in this simpler view)
+    const creditSums = {}; // uid -> sum
+    creditSnap.forEach(doc => {
+      const d = doc.data();
+      const uid = d.uid;
+      const status = (d.status || '').toString().toLowerCase();
+      const acceptedStatuses = ['approved','processed','completed','paid'];
+      if (!acceptedStatuses.includes(status)) return;
+      const amount = Number(d.amountLBP) || 0;
+      creditSums[uid] = (creditSums[uid] || 0) + amount;
+    });
+
+    const spentSums = {};
+    ordersSnap.forEach(doc => {
+      const d = doc.data();
+      const uid = d.uid;
+      const status = (d.status || '').toString().toLowerCase();
+      const acceptedOrderStatuses = ['approved','completed','paid'];
+      if (!acceptedOrderStatuses.includes(status)) return;
+      const price = Number(d.priceLBP) || 0;
+      spentSums[uid] = (spentSums[uid] || 0) + price;
+    });
+
     for (const user of users) {
       const uid = user.id;
       const isBlocked = user.blocked || false;
@@ -473,11 +503,17 @@ async function refreshUsers() {
       
       const tr = document.createElement("tr");
       tr.className = "border-b border-navy-700 hover:bg-navy-800";
+      // Compute balance = stored + credits - spent
+      const stored = Number(user.balanceLBP) || 0;
+      const credits = Number(creditSums[uid] || 0);
+      const spent = Number(spentSums[uid] || 0);
+      const balance = stored + credits - spent;
+
       tr.innerHTML = `
         <td class="px-4 py-3 text-sm">${user.firstName || ""} ${user.lastName || ""}</td>
-        <td class="px-4 py-3 text-sm">${user.email || "-"}</td>
-        <td class="px-4 py-3 text-sm">${user.phone || "-"}</td>
-        <td class="px-4 py-3 text-sm">${formatLBP(user.balanceLBP || 0)}</td>
+  <td class="px-4 py-3 text-sm">${user.email || ""}</td>
+  <td class="px-4 py-3 text-sm">${user.phone || ""}</td>
+  <td class="px-4 py-3 text-sm" style="--tw-content:''">${formatLBP(balance || 0)}</td>
         <td class="px-4 py-3">${statusBadge}</td>
         <td class="px-4 py-3">${actionButton}</td>
       `;
