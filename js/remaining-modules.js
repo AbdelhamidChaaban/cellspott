@@ -53,7 +53,7 @@ function initPurchaseModal(uid) {
   if (copyBtn) {
     copyBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      const number = "71829887";
+      const number = "03475704";
       try {
         await navigator.clipboard.writeText(number);
         const originalHTML = copyBtn.innerHTML;
@@ -230,7 +230,7 @@ function initAlfaPurchaseModal(uid) {
   if (copyBtn) {
     copyBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      const number = "71829887";
+      const number = "03475704";
       try {
         await navigator.clipboard.writeText(number);
         const originalHTML = copyBtn.innerHTML;
@@ -463,7 +463,7 @@ function initCreditsPage(uid) {
   if (copyBtn) {
     copyBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      const number = "71829887";
+      const number = "03475704";
       try {
         await navigator.clipboard.writeText(number);
         const originalHTML = copyBtn.innerHTML;
@@ -757,7 +757,7 @@ function initValidityPurchaseModal(uid) {
   // Copy number functionality
   if (copyBtn) {
     copyBtn.addEventListener("click", () => {
-      navigator.clipboard.writeText("71829887");
+      navigator.clipboard.writeText("03475704");
       copyBtn.innerHTML = '<i data-feather="check" class="w-5 h-5"></i>';
       setTimeout(() => {
         copyBtn.innerHTML = '<i data-feather="copy" class="w-5 h-5"></i>';
@@ -879,7 +879,7 @@ function initValidityPage(uid) {
   if (copyBtn) {
     copyBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      const number = "71829887";
+      const number = "03475704";
       try {
         await navigator.clipboard.writeText(number);
         const originalHTML = copyBtn.innerHTML;
@@ -1028,7 +1028,7 @@ function initCreditsPurchaseModal(uid) {
   // Copy number functionality
   if (copyBtn) {
     copyBtn.addEventListener("click", () => {
-      navigator.clipboard.writeText("71829887");
+      navigator.clipboard.writeText("03475704");
       copyBtn.innerHTML = '<i data-feather="check" class="w-5 h-5"></i>';
       setTimeout(() => {
         copyBtn.innerHTML = '<i data-feather="copy" class="w-5 h-5"></i>';
@@ -1476,7 +1476,7 @@ function initStreamingPurchaseModal(uid) {
   // Copy number functionality
   if (copyBtn) {
     copyBtn.addEventListener("click", () => {
-      navigator.clipboard.writeText("71829887");
+      navigator.clipboard.writeText("03475704");
       copyBtn.innerHTML = '<i data-feather="check" class="w-5 h-5"></i>';
       setTimeout(() => {
         copyBtn.innerHTML = '<i data-feather="copy" class="w-5 h-5"></i>';

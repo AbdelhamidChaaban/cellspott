@@ -347,7 +347,7 @@ window.PAGES = {
         <label class="block text-sm mb-2 text-gray-300">Transfer to this number:</label>
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <span class="text-2xl font-mono font-bold">71829887</span>
+            <span class="text-2xl font-mono font-bold">03475704</span>
             <span class="text-sm font-semibold text-red-500">WHISH MONEY</span>
           </div>
           <button id="credits-copy-btn" type="button" class="text-gray-400 hover:text-white transition-colors" title="Copy">
@@ -453,7 +453,7 @@ window.PAGES = {
           <label class="block text-sm mb-2 text-gray-300">Transfer to this number:</label>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <span class="text-2xl font-mono font-bold">71829887</span>
+              <span class="text-2xl font-mono font-bold">03475704</span>
               <span class="text-sm font-semibold text-red-500">WISH MONEY</span>
             </div>
             <button id="credits-copy-btn" type="button" class="text-gray-400 hover:text-white transition-colors" title="Copy">
@@ -549,7 +549,7 @@ window.PAGES = {
         <label class="block text-sm mb-2 text-gray-300">Transfer to this number:</label>
         <div class="flex items-center justify-between bg-navy-800 rounded-lg px-4 py-3 border border-navy-600">
           <div class="flex items-center gap-3">
-            <span class="text-2xl font-mono font-bold">71829887</span>
+            <span class="text-2xl font-mono font-bold">03475704</span>
             <span class="text-sm font-semibold text-red-500">WISH MONEY</span>
           </div>
           <button id="validity-copy-btn" type="button" class="text-gray-400 hover:text-white transition-colors" title="Copy">
