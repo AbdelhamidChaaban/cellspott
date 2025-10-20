@@ -443,14 +443,19 @@ async function loadOrders() {
   if (exportBtn) {
     exportBtn.addEventListener("click", async () => {
       const dateFilter = document.getElementById('order-date-filter')?.value || 'all';
-      await exportAllOrdersToExcel(dateFilter);
+      const statusFilter = $("#order-status-filter")?.value || "";
+      const typeFilter = $("#order-type-filter")?.value || "";
+      const searchQuery = $("#order-search")?.value.trim() || "";
+      const userFilter = window.currentUserFilter || null;
+      
+      await exportAllOrdersToExcel(dateFilter, statusFilter, typeFilter, searchQuery, userFilter);
     });
   }
   
   await refreshOrders();
 }
 
-async function exportAllOrdersToExcel(dateFilter = 'all') {
+async function exportAllOrdersToExcel(dateFilter = 'all', statusFilter = '', typeFilter = '', searchQuery = '', userFilter = null) {
   try {
     // Determine date range based on filter
     let startDate = null;
@@ -486,16 +491,98 @@ async function exportAllOrdersToExcel(dateFilter = 'all') {
       return;
     }
     
+    // Apply filters similar to refreshOrders function
+    let orders = [];
+    ordersSnap.forEach(doc => {
+      const data = doc.data();
+      const orderDate = data.createdAt?.toDate();
+      
+      // Apply date filter
+      if (startDate && endDate && orderDate) {
+        if (orderDate >= startDate && orderDate <= endDate) {
+          orders.push({ id: doc.id, ...data });
+        }
+      } else if (!startDate && !endDate) {
+        // "All Time" - include all orders
+        orders.push({ id: doc.id, ...data });
+      }
+    });
+    
+    // Apply user filter
+    if (userFilter) {
+      orders = orders.filter(o => o.uid === userFilter);
+    }
+    
+    // Apply status filter
+    if (statusFilter) {
+      orders = orders.filter(o => o.status === statusFilter);
+    }
+    
+    // Apply type filter
+    if (typeFilter) {
+      orders = orders.filter(o => (o.type || "closed-service") === typeFilter);
+    }
+    
+    // Apply search query filter for phone numbers
+    if (searchQuery && /^\d+$/.test(searchQuery)) {
+      orders = orders.filter(o => 
+        (o.phone && o.phone.includes(searchQuery)) ||
+        (o.secondaryPhone && o.secondaryPhone.includes(searchQuery))
+      );
+    }
+    
+    // For name search, we need to fetch user data
+    if (searchQuery && !/^\d+$/.test(searchQuery)) {
+      const qLower = searchQuery.toLowerCase();
+      const filteredOrders = [];
+      
+      // Fetch all user data in parallel
+      const userPromises = orders.map(order => 
+        order.uid ? db.collection("users").doc(order.uid).get().catch(() => null) : Promise.resolve(null)
+      );
+      const userDocs = await Promise.all(userPromises);
+      
+      for (let i = 0; i < orders.length; i++) {
+        const order = orders[i];
+        const userDoc = userDocs[i];
+        let matched = false;
+        
+        if (userDoc && userDoc.exists) {
+          const u = userDoc.data();
+          const username = (u.username || "").toString().toLowerCase();
+          const fullName = `${(u.firstName||"").toString()} ${(u.lastName||"").toString()}`.toLowerCase().trim();
+          
+          if (username && username.includes(qLower)) matched = true;
+          if (!matched && fullName && fullName.includes(qLower)) matched = true;
+        }
+        
+        // Also allow matching by email
+        if (!matched && order.email && order.email.toLowerCase().includes(qLower)) matched = true;
+        
+        if (matched) {
+          filteredOrders.push(order);
+        }
+      }
+      
+      // Replace orders with filtered list
+      orders = filteredOrders;
+    }
+    
+    if (orders.length === 0) {
+      alert("No orders match your search criteria");
+      return;
+    }
+    
     let csv = "Date,User Name,Service Type,Quantity,Price (LBP),Phone,Status\n";
     
-    for (const doc of ordersSnap.docs) {
-      const d = doc.data();
-      const date = d.createdAt?.toDate?.().toLocaleString() || "-";
+    // Process filtered orders instead of all orders
+    for (const order of orders) {
+      const date = order.createdAt?.toDate?.().toLocaleString() || "-";
       
       let userName = "Unknown";
-      if (d.uid) {
+      if (order.uid) {
         try {
-          const userDoc = await db.collection("users").doc(d.uid).get();
+          const userDoc = await db.collection("users").doc(order.uid).get();
           if (userDoc.exists) {
             const userData = userDoc.data();
             userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
@@ -503,8 +590,8 @@ async function exportAllOrdersToExcel(dateFilter = 'all') {
         } catch (e) {}
       }
       
-      let serviceType = d.type || "closed-service";
-      if (serviceType === "streaming") serviceType = `Streaming: ${d.serviceName || ""}`;
+      let serviceType = order.type || "closed-service";
+      if (serviceType === "streaming") serviceType = `Streaming: ${order.serviceName || ""}`;
       else if (serviceType === "alfa-gift") serviceType = "Alfa Gift";
       else if (serviceType === "credits") serviceType = "Credits";
       else if (serviceType === "validity") serviceType = "Validity";
@@ -512,13 +599,13 @@ async function exportAllOrdersToExcel(dateFilter = 'all') {
       else serviceType = "Closed u-share";
       
       let quantity = "-";
-      if (d.type === "streaming") quantity = d.packageName || "-";
-      else if (d.packageSizeGB) quantity = d.packageSizeGB + " GB";
-      else if (d.creditsAmount) quantity = d.creditsAmount + " Credits";
+      if (order.type === "streaming") quantity = order.packageName || "-";
+      else if (order.packageSizeGB) quantity = order.packageSizeGB + " GB";
+      else if (order.creditsAmount) quantity = order.creditsAmount + " Credits";
       
-      const price = d.priceLBP || 0;
-      const phone = d.phone || d.secondaryPhone || "-";
-      const status = d.status || "pending";
+      const price = order.priceLBP || 0;
+      const phone = order.phone || order.secondaryPhone || "-";
+      const status = order.status || "pending";
       
       csv += `"${date}","${userName}","${serviceType}","${quantity}",${price},"${phone}","${status}"\n`;
     }
@@ -825,9 +912,9 @@ async function loadUsers() {
             <input id="user-search" oninput="refreshUsers()" type="text" placeholder="Search by ID, name, email or phone..." class="w-full px-4 py-2 rounded-lg input-dark">
           </div>
           <div>
-            <label class="block text-sm text-gray-400 mb-2">Balances as of</label>
+            <label class="block text-sm text-gray-400 mb-2">Balance Date</label>
             <input id="user-balance-date" onchange="refreshUsers()" type="date" class="w-full px-4 py-2 rounded-lg input-dark text-sm">
-            <p class="text-xs text-gray-400 mt-2">Shown = stored balance + approved credits (up to date) - approved orders (up to date)</p>
+            <p class="text-xs text-gray-400 mt-2">No date: shows stored balance. With date: shows daily credits - spent for that day only</p>
           </div>
         </div>
       </div>
@@ -973,11 +1060,86 @@ async function refreshUsers() {
         ? `<button onclick="unblockUser('${uid}')" class="px-3 py-1 rounded bg-green-600 hover:bg-green-700 text-white text-xs font-medium">Unblock</button>`
         : `<button onclick="blockUser('${uid}')" class="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium">Block</button>`;
       
-  // Compute balance as of selected date: stored balance + approved credits up to date - approved orders spent up to date
+  // FIXED: Calculate daily balance only (not cumulative)
+  // If no date is selected, show the stored balance
+  // If date is selected, only show credits - spent for that specific day
   const stored = Number(user.balanceLBP) || 0;
-  const credits = Number(creditSums[uid] || 0);
-  const spent = Number(spentSums[uid] || 0);
-  const balanceAsOf = stored + credits - spent;
+  
+  // Default to showing stored balance
+  let balanceAsOf = stored;
+  
+  // Only calculate daily transactions if a date is selected
+  if (balanceEndDate) {
+    // IMPORTANT: We're completely ignoring the stored balance and creditSums/spentSums
+    // when a date is selected - we ONLY want transactions from that specific day
+    
+    // Create a start date for the same day at 00:00:00
+    const balanceStartDate = new Date(balanceEndDate);
+    balanceStartDate.setHours(0, 0, 0, 0);
+    
+    // Initialize daily credits and spent
+    let dailyCredits = 0;
+    let dailySpent = 0;
+    
+    // Calculate credits for the specific day only
+    creditSnap.forEach(doc => {
+      const d = doc.data();
+      if (d.uid !== uid) return;
+      
+      const status = (d.status || '').toString().toLowerCase();
+      const acceptedStatuses = ['approved', 'processed', 'completed', 'paid'];
+      if (!acceptedStatuses.includes(status)) return;
+      
+      const processedTs = (d.processedDate && d.processedDate.toDate) ? d.processedDate.toDate() : 
+                         (d.requestDate && d.requestDate.toDate ? d.requestDate.toDate() : null);
+      if (!processedTs) return;
+      
+      // Only include credits from the selected day
+      if (processedTs >= balanceStartDate && processedTs <= balanceEndDate) {
+        const amount = Number(d.amountLBP) || 0;
+        dailyCredits += amount;
+        
+        // Debug log for first few users
+        if (idCounter <= 5) {
+          console.log(`Daily credit for user ${uid} on ${balanceStartDate.toLocaleDateString()}: +${amount} LBP`);
+        }
+      }
+    });
+    
+    // Calculate spent for the specific day only
+    ordersSnap.forEach(doc => {
+      const d = doc.data();
+      if (d.uid !== uid) return;
+      
+      const status = (d.status || '').toString().toLowerCase();
+      const acceptedOrderStatuses = ['approved', 'completed', 'paid'];
+      if (!acceptedOrderStatuses.includes(status)) return;
+      
+      const createdTs = (d.approvedAt && d.approvedAt.toDate) ? d.approvedAt.toDate() : 
+                       ((d.createdAt && d.createdAt.toDate) ? d.createdAt.toDate() : null);
+      if (!createdTs) return;
+      
+      // Only include orders from the selected day
+      if (createdTs >= balanceStartDate && createdTs <= balanceEndDate) {
+        const amount = Number(d.priceLBP) || 0;
+        dailySpent += amount;
+        
+        // Debug log for first few users
+        if (idCounter <= 5) {
+          console.log(`Daily spent for user ${uid} on ${balanceStartDate.toLocaleDateString()}: -${amount} LBP`);
+        }
+      }
+    });
+    
+    // IMPORTANT CHANGE: For daily balance, we ONLY show credits - spent for the selected day
+    // We're completely replacing balanceAsOf with just the daily calculation
+    balanceAsOf = dailyCredits - dailySpent;
+    
+    // Debug log for first few users
+    if (idCounter <= 5) {
+      console.log(`Final daily balance for user ${uid} on ${balanceStartDate.toLocaleDateString()}: ${balanceAsOf} LBP (credits: ${dailyCredits}, spent: ${dailySpent}, stored balance IGNORED: ${stored})`);
+    }
+  }
 
       html += `
         <tr class="border-b border-navy-700 hover:bg-navy-800">
@@ -985,7 +1147,12 @@ async function refreshUsers() {
           <td class="px-4 py-3">${user.firstName || ''} ${user.lastName || ''}</td>
           <td class="px-4 py-3 text-sm text-gray-400">${user.email || ''}</td>
           <td class="px-4 py-3 text-sm">${user.phone || ''}</td>
-          <td class="px-4 py-3 text-sm" style="tw-content: ''">${formatLBP(balanceAsOf || 0)}</td>
+          <td class="px-4 py-3 text-sm" style="tw-content: ''">
+            ${balanceEndDate ? 
+              `<span class="text-blue-500 font-medium">${formatLBP(balanceAsOf || 0)} <span class="bg-blue-500/20 px-2 py-1 rounded text-xs">DAILY</span></span>` : 
+              `<span>${formatLBP(balanceAsOf || 0)} <span class="bg-gray-500/20 px-2 py-1 rounded text-xs">TOTAL</span></span>`
+            }
+          </td>
           <td class="px-4 py-3">${statusBadge}</td>
           <td class="px-4 py-3">${actionButton}</td>
         </tr>
