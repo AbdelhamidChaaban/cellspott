@@ -31,10 +31,13 @@ async function renderPackages() {
     
     container.innerHTML = "";
     packages.forEach((p, idx) => {
-  const originalPrice = p.priceLBP;
-  // promoDiscount is an amount in LBP
-  const discountedPrice = promoCodeApplied ? Math.max(0, Math.round(originalPrice - promoDiscount)) : originalPrice;
-  const hasDiscount = promoCodeApplied;
+      const originalPrice = p.priceLBP;
+      const fakeOriginalPrice = originalPrice + 50000; // Add 50,000 LBP to create fake discount
+      
+      // Calculate total discount from both promo codes
+      const totalDiscount = (promoCodeApplied ? promoDiscount : 0) + (promo2CodeApplied ? promo2Discount : 0);
+      const discountedPrice = totalDiscount > 0 ? Math.max(0, Math.round(originalPrice - totalDiscount)) : originalPrice;
+      const hasDiscount = promoCodeApplied || promo2CodeApplied;
       
       // Determine availability status
       const qty = p.quantity !== undefined ? p.quantity : 0;
@@ -57,7 +60,7 @@ async function renderPackages() {
       card.innerHTML = `
         <div class="package-card-inner flex flex-col">
           ${availabilityBadge}
-          ${hasDiscount ? '<div class="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">' + Number(promoDiscount).toLocaleString() + ' LBP off</div>' : ''}
+          ${hasDiscount ? '<div class="absolute top-2 left-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">' + Number(totalDiscount).toLocaleString() + ' LBP off</div>' : ''}
           
           <div class="text-center mb-4">
             <svg class="w-16 h-16 mx-auto mb-3 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
@@ -68,8 +71,9 @@ async function renderPackages() {
           </div>
           
           <div class="text-center mb-4">
-            ${hasDiscount ? `<div class="text-sm text-gray-500 line-through">${formatLBP(originalPrice)}</div>` : ''}
-            <div class="text-2xl font-bold text-white ${hasDiscount ? 'text-green-400' : ''}">${formatLBP(discountedPrice)}</div>
+            <!-- Always show fake original price with strikethrough -->
+            <div class="text-sm text-gray-500 line-through">${formatLBP(fakeOriginalPrice)}</div>
+            <div class="text-2xl font-bold text-white text-green-400">${formatLBP(discountedPrice)}</div>
           </div>
           
           <button data-idx="${idx}" data-price="${discountedPrice}" data-package-id="${p.id || ''}" ${buttonDisabled} class="pkg-buy w-full py-3 rounded-lg ${buttonClass} font-semibold flex items-center justify-center space-x-2 transition-all hover:scale-105">
@@ -140,8 +144,10 @@ async function renderAlfaPackages() {
     
     container.innerHTML = "";
     packages.forEach((p, idx) => {
-  const originalPrice = p.priceLBP;
-  const discountedPrice = alfaPromoCodeApplied ? Math.max(0, Math.round(originalPrice - alfaPromoDiscount)) : originalPrice;
+      const originalPrice = p.priceLBP;
+      const fakeOriginalPrice = originalPrice + 50000; // Add 50,000 LBP to create fake discount
+      
+      const discountedPrice = alfaPromoCodeApplied ? Math.max(0, Math.round(originalPrice - alfaPromoDiscount)) : originalPrice;
       const hasDiscount = alfaPromoCodeApplied;
       
       // Determine availability status
@@ -174,8 +180,9 @@ async function renderAlfaPackages() {
             <div class="text-sm text-gray-400">Gift Package</div>
           </div>
           <div class="text-center mb-4">
-            ${hasDiscount ? `<div class="text-sm text-gray-500 line-through">${formatLBP(originalPrice)}</div>` : ''}
-            <div class="text-2xl font-bold text-white ${hasDiscount ? 'text-green-400' : ''}">${formatLBP(discountedPrice)}</div>
+            <!-- Always show fake original price with strikethrough -->
+            <div class="text-sm text-gray-500 line-through">${formatLBP(fakeOriginalPrice)}</div>
+            <div class="text-2xl font-bold text-white text-green-400">${formatLBP(discountedPrice)}</div>
           </div>
           <button data-idx="${idx}" data-price="${discountedPrice}" data-package-id="${p.id || ''}" ${buttonDisabled} class="alfa-pkg-buy w-full py-3 rounded-lg ${buttonClass} font-semibold flex items-center justify-center space-x-2 transition-all hover:scale-105">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -253,8 +260,10 @@ async function renderOpenPackages() {
     
     container.innerHTML = "";
     packages.forEach((p, idx) => {
-  const originalPrice = p.priceLBP;
-  const discountedPrice = openPromoCodeApplied ? Math.max(0, Math.round(originalPrice - openPromoDiscount)) : originalPrice;
+      const originalPrice = p.priceLBP;
+      const fakeOriginalPrice = originalPrice + 50000; // Add 50,000 LBP to create fake discount
+      
+      const discountedPrice = openPromoCodeApplied ? Math.max(0, Math.round(originalPrice - openPromoDiscount)) : originalPrice;
       const hasDiscount = openPromoCodeApplied;
       
       // Determine availability status
@@ -287,8 +296,9 @@ async function renderOpenPackages() {
             <div class="text-sm text-gray-400">Open Service Package</div>
           </div>
           <div class="text-center mb-4">
-            ${hasDiscount ? `<div class="text-sm text-gray-500 line-through">${formatLBP(originalPrice)}</div>` : ''}
-            <div class="text-2xl font-bold text-white ${hasDiscount ? 'text-green-400' : ''}">${formatLBP(discountedPrice)}</div>
+            <!-- Always show fake original price with strikethrough -->
+            <div class="text-sm text-gray-500 line-through">${formatLBP(fakeOriginalPrice)}</div>
+            <div class="text-2xl font-bold text-white text-green-400">${formatLBP(discountedPrice)}</div>
           </div>
           <button data-idx="${idx}" data-price="${discountedPrice}" data-package-id="${p.id || ''}" ${buttonDisabled} class="open-pkg-buy w-full py-3 rounded-lg ${buttonClass} font-semibold flex items-center justify-center space-x-2 transition-all hover:scale-105">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

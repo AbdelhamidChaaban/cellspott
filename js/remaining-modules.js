@@ -676,6 +676,8 @@ async function renderValidityPackages() {
   // Determine validity promo state (promoDiscount is an amount in LBP)
   const promoApplied = typeof validityPromoCodeApplied !== 'undefined' ? validityPromoCodeApplied : false;
   const promoDiscount = typeof validityPromoDiscount !== 'undefined' ? validityPromoDiscount : 0;
+  const promo2Applied = typeof validityPromo2CodeApplied !== 'undefined' ? validityPromo2CodeApplied : false;
+  const promo2Discount = typeof validityPromo2Discount !== 'undefined' ? validityPromo2Discount : 0;
 
     packages.forEach(pkg => {
       const qty = pkg.quantity !== undefined ? pkg.quantity : 0;
@@ -688,9 +690,12 @@ async function renderValidityPackages() {
       }
 
       const originalPrice = pkg.priceLBP;
-  // Subtract fixed LBP amount and never go below 0
-  const discountedPrice = promoApplied ? Math.max(0, Math.round(originalPrice - promoDiscount)) : originalPrice;
-      const hasDiscount = promoApplied;
+      const fakeOriginalPrice = originalPrice + 50000; // Add 50,000 LBP to create fake discount
+      
+      // Calculate total discount from both promo codes
+      const totalDiscount = (promoApplied ? promoDiscount : 0) + (promo2Applied ? promo2Discount : 0);
+      const discountedPrice = totalDiscount > 0 ? Math.max(0, Math.round(originalPrice - totalDiscount)) : originalPrice;
+      const hasDiscount = promoApplied || promo2Applied;
       
       const cardWrapper = document.createElement("div");
       cardWrapper.className = "package-card-wrapper";
@@ -704,8 +709,9 @@ async function renderValidityPackages() {
             <div class="text-sm text-gray-400">Extension</div>
           </div>
           <div class="text-center mb-4">
-            <div class="text-2xl font-bold text-white ${hasDiscount ? 'text-green-400' : ''}">${formatLBP(discountedPrice)}</div>
-            ${hasDiscount ? `<div class="text-sm text-gray-400 line-through">${formatLBP(originalPrice)}</div>` : ''}
+            <!-- Always show fake original price with strikethrough -->
+            <div class="text-sm text-gray-500 line-through">${formatLBP(fakeOriginalPrice)}</div>
+            <div class="text-2xl font-bold text-white text-green-400">${formatLBP(discountedPrice)}</div>
           </div>
           <button ${buttonDisabled} class="validity-pkg-buy w-full py-3 rounded-lg ${buttonClass} text-white font-semibold transition-all hover:scale-105" data-package="${pkg.description}" data-price="${discountedPrice}">
             ${qty === 0 ? 'Sold Out' : 'Purchase'}
@@ -733,6 +739,12 @@ async function renderValidityPackages() {
       if (applyBtn) applyBtn.addEventListener('click', applyValidityPromoCode);
       const promoInput = $("#validity-promo-code-input");
       if (promoInput) promoInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyValidityPromoCode(); });
+      
+      // Add second promo code handlers
+      const apply2Btn = $("#validity-apply-promo2-btn");
+      if (apply2Btn) apply2Btn.addEventListener('click', applyValidityPromo2Code);
+      const promo2Input = $("#validity-promo2-code-input");
+      if (promo2Input) promo2Input.addEventListener('keypress', (e) => { if (e.key === 'Enter') applyValidityPromo2Code(); });
     } catch (err) {
       console.warn('Failed to wire validity promo handlers in renderValidityPackages', err);
     }
@@ -1653,25 +1665,37 @@ async function renderStreamingPackages(serviceName) {
     if (serviceName === "Netflix") iconColor = "text-red-400";
     else if (serviceName === "Shahed") iconColor = "text-purple-400";
     
-    // Determine which promo code applies
+    // Determine which promo codes apply
     let promoApplied = false;
     let promoDiscount = 0;
+    let promo2Applied = false;
+    let promo2Discount = 0;
+    
     if (serviceName === "Netflix") {
       promoApplied = netflixPromoCodeApplied;
       promoDiscount = netflixPromoDiscount;
+      promo2Applied = netflixPromo2CodeApplied;
+      promo2Discount = netflixPromo2Discount;
     } else if (serviceName === "Shahed") {
       promoApplied = shahedPromoCodeApplied;
       promoDiscount = shahedPromoDiscount;
+      promo2Applied = shahedPromo2CodeApplied;
+      promo2Discount = shahedPromo2Discount;
     } else if (serviceName === "OSN+") {
       promoApplied = osnPromoCodeApplied;
       promoDiscount = osnPromoDiscount;
+      promo2Applied = osnPromo2CodeApplied;
+      promo2Discount = osnPromo2Discount;
     }
     
     packages.forEach(pkg => {
-  const originalPrice = pkg.priceLBP;
-  // promoDiscount is an amount in LBP for streaming promos as well
-  const discountedPrice = promoApplied ? Math.max(0, Math.round(originalPrice - promoDiscount)) : originalPrice;
-      const hasDiscount = promoApplied;
+      const originalPrice = pkg.priceLBP;
+      const fakeOriginalPrice = originalPrice + 50000; // Add 50,000 LBP to create fake discount
+      
+      // Calculate total discount from both promo codes
+      const totalDiscount = (promoApplied ? promoDiscount : 0) + (promo2Applied ? promo2Discount : 0);
+      const discountedPrice = totalDiscount > 0 ? Math.max(0, Math.round(originalPrice - totalDiscount)) : originalPrice;
+      const hasDiscount = promoApplied || promo2Applied;
       
       const qty = pkg.quantity !== undefined ? pkg.quantity : 0;
       let buttonDisabled = '';
@@ -1702,15 +1726,16 @@ async function renderStreamingPackages(serviceName) {
       cardWrapper.className = "package-card-wrapper";
       cardWrapper.innerHTML = `
         <div class="package-card-inner flex flex-col">
-          ${hasDiscount ? '<div class="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">' + Number(promoDiscount).toLocaleString() + ' LBP off</div>' : ''}
+          ${hasDiscount ? '<div class="absolute top-2 right-2 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-full z-20">' + Number(totalDiscount).toLocaleString() + ' LBP off</div>' : ''}
           <div class="text-center mb-4">
             ${iconSvg}
             <div class="text-2xl font-bold text-white mb-1">${pkg.description || "Package"}</div>
             <div class="text-sm text-gray-400">${serviceName}</div>
           </div>
           <div class="text-center mb-4">
-            ${hasDiscount ? `<div class="text-sm text-gray-500 line-through">${formatLBP(originalPrice)}</div>` : ''}
-            <div class="text-2xl font-bold text-white ${hasDiscount ? 'text-green-400' : ''}">${formatLBP(discountedPrice)}</div>
+            <!-- Always show fake original price with strikethrough -->
+            <div class="text-sm text-gray-500 line-through">${formatLBP(fakeOriginalPrice)}</div>
+            <div class="text-2xl font-bold text-white text-green-400">${formatLBP(discountedPrice)}</div>
           </div>
           <button ${buttonDisabled} class="streaming-pkg-buy w-full py-3 rounded-lg ${buttonClass} text-white font-semibold transition-all hover:scale-105" data-service="${serviceName}" data-package="${pkg.description}" data-price="${Math.round(discountedPrice)}">
             ${qty === 0 ? 'Sold Out' : 'Purchase'}
@@ -1749,6 +1774,20 @@ async function renderStreamingPackages(serviceName) {
           }
         });
       }
+      
+      // Add second promo code handlers
+      const apply2Btn = $("#netflix-apply-promo2-btn");
+      if (apply2Btn) {
+        apply2Btn.addEventListener("click", applyNetflixPromo2Code);
+      }
+      const promo2Input = $("#netflix-promo2-code-input");
+      if (promo2Input) {
+        promo2Input.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            applyNetflixPromo2Code();
+          }
+        });
+      }
     } else if (serviceName === "Shahed") {
       const applyBtn = $("#shahed-apply-promo-btn");
       if (applyBtn) {
@@ -1762,6 +1801,20 @@ async function renderStreamingPackages(serviceName) {
           }
         });
       }
+      
+      // Add second promo code handlers
+      const apply2Btn = $("#shahed-apply-promo2-btn");
+      if (apply2Btn) {
+        apply2Btn.addEventListener("click", applyShahedPromo2Code);
+      }
+      const promo2Input = $("#shahed-promo2-code-input");
+      if (promo2Input) {
+        promo2Input.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            applyShahedPromo2Code();
+          }
+        });
+      }
     } else if (serviceName === "OSN+") {
       const applyBtn = $("#osn-apply-promo-btn");
       if (applyBtn) {
@@ -1772,6 +1825,20 @@ async function renderStreamingPackages(serviceName) {
         promoInput.addEventListener("keypress", (e) => {
           if (e.key === "Enter") {
             applyOsnPromoCode();
+          }
+        });
+      }
+      
+      // Add second promo code handlers
+      const apply2Btn = $("#osn-apply-promo2-btn");
+      if (apply2Btn) {
+        apply2Btn.addEventListener("click", applyOsnPromo2Code);
+      }
+      const promo2Input = $("#osn-promo2-code-input");
+      if (promo2Input) {
+        promo2Input.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            applyOsnPromo2Code();
           }
         });
       }
@@ -1819,8 +1886,48 @@ function initServicePage() {
 }
 
 // ---------- App Boot ----------
-function showAuth() { show($("#auth-view")); hide($("#app-shell")); }
-function showApp() { hide($("#auth-view")); show($("#app-shell")); }
+function showAuth() {
+  const landingView = document.getElementById('landing-view');
+  const authView = document.getElementById('auth-view');
+  const appShell = document.getElementById('app-shell');
+  const loadingView = document.getElementById('loading-view');
+  
+  // Hide loading and other views
+  if (loadingView) {
+    loadingView.classList.add('hidden');
+  }
+  if (landingView) {
+    landingView.classList.add('hidden');
+  }
+  if (authView) {
+    authView.classList.remove('hidden');
+    authView.classList.add('flex');
+  }
+  if (appShell) {
+    appShell.classList.add('hidden');
+  }
+}
+function showApp() {
+  const landingView = document.getElementById('landing-view');
+  const authView = document.getElementById('auth-view');
+  const appShell = document.getElementById('app-shell');
+  const loadingView = document.getElementById('loading-view');
+  
+  // Hide loading and other views
+  if (loadingView) {
+    loadingView.classList.add('hidden');
+  }
+  if (landingView) {
+    landingView.classList.add('hidden');
+  }
+  if (authView) {
+    authView.classList.add('hidden');
+    authView.classList.remove('flex');
+  }
+  if (appShell) {
+    appShell.classList.remove('hidden');
+  }
+}
 
 async function checkFirstLogin(uid) {
   try {
@@ -1958,6 +2065,57 @@ function bootForUser(user) {
   };
 }
 
+function showLoadingState() {
+  const landingView = document.getElementById('landing-view');
+  const authView = document.getElementById('auth-view');
+  const appShell = document.getElementById('app-shell');
+  const loadingView = document.getElementById('loading-view');
+  
+  // Hide all views initially
+  if (landingView) {
+    landingView.classList.add('hidden');
+  }
+  if (authView) {
+    authView.classList.add('hidden');
+    authView.classList.remove('flex');
+  }
+  if (appShell) {
+    appShell.classList.add('hidden');
+  }
+  if (loadingView) {
+    loadingView.classList.remove('hidden');
+  }
+}
+
+function showLanding() {
+  const landingView = document.getElementById('landing-view');
+  const authView = document.getElementById('auth-view');
+  const appShell = document.getElementById('app-shell');
+  const loadingView = document.getElementById('loading-view');
+  
+  // Hide loading and other views
+  if (loadingView) {
+    loadingView.classList.add('hidden');
+  }
+  if (authView) {
+    authView.classList.add('hidden');
+    authView.classList.remove('flex');
+  }
+  if (appShell) {
+    appShell.classList.add('hidden');
+  }
+  
+  // Show landing view
+  if (landingView) {
+    landingView.classList.remove('hidden');
+  }
+  
+  // Load landing page content dynamically
+  if (window.loadLandingPage) {
+    window.loadLandingPage();
+  }
+}
+
 function initApp() {
   initTheme();
   initAuthView();
@@ -1965,6 +2123,9 @@ function initApp() {
   // Also wire topbar theme button
   const topToggle = $("#toggle-theme");
   if (topToggle) topToggle.addEventListener("click", () => setTheme(!document.documentElement.classList.contains("dark")));
+
+  // Show loading state initially to prevent landing page flash
+  showLoadingState();
 
   let cleanup = null;
   auth.onAuthStateChanged(async (user) => {
@@ -1978,7 +2139,7 @@ function initApp() {
           // User is blocked - sign them out
           await auth.signOut();
           alert("Your account has been blocked. Please contact support for assistance.");
-          showAuth();
+          showLanding();
           return;
         }
         
@@ -1995,7 +2156,8 @@ function initApp() {
       }
     } else {
       if (cleanup) { cleanup(); cleanup = null; }
-      showAuth();
+      // Show landing page only after confirming user is not authenticated
+      showLanding();
     }
   });
 }

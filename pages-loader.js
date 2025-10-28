@@ -165,6 +165,11 @@ window.PAGES = {
     </div>
     <p class="text-sm text-gray-400 mb-6">Available u-share Services</p>
     
+    <!-- Warning Message -->
+    <div class="mb-6">
+     
+    </div>
+    
     <!-- Promo Code Section -->
     <div class="mb-6 max-w-md">
       <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>
@@ -679,10 +684,10 @@ window.PAGES = {
             <path d="M5.398 0v.006c3.028 8.556 5.37 15.175 8.348 23.596 2.344.058 4.85.398 4.854.398-2.8-7.924-5.923-16.747-8.487-24zm8.489 0v9.63L18.6 22.951c-.043-7.86-.004-15.913.002-22.95zM5.398 1.05V24c2.873-.086 4.958-.406 5.002-.398V1.05z"/>
           </svg>
         </div>
-        <h3 class="text-xl font-semibold">Netflix Subscriptions</h3>
+        <h3 class="text-xl font-semibold">Netflix Management</h3>
       </div>
     </div>
-    <p class="text-sm text-gray-400 mb-8">Choose your Netflix subscription plan</p>
+    <p class="text-sm text-gray-400 mb-6">Available Netflix Packages</p>
     
     <!-- Promo Code Section -->
     <div class="mb-6 max-w-md">
@@ -704,9 +709,7 @@ window.PAGES = {
       <div id="netflix-promo-message" class="mt-2 text-sm"></div>
     </div>
 
-    <div id="netflix-packages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="col-span-full text-center py-8 text-gray-400">Loading packages...</div>
-    </div>
+    <div id="netflix-packages-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
   </div>
 </div>`,
 
@@ -722,10 +725,10 @@ window.PAGES = {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
           </svg>
         </div>
-        <h3 class="text-xl font-semibold">Shahed Subscriptions</h3>
+        <h3 class="text-xl font-semibold">Shahed Management</h3>
       </div>
     </div>
-    <p class="text-sm text-gray-400 mb-8">Choose your Shahed subscription plan</p>
+    <p class="text-sm text-gray-400 mb-6">Available Shahed Packages</p>
     
     <!-- Promo Code Section -->
     <div class="mb-6 max-w-md">
@@ -747,9 +750,7 @@ window.PAGES = {
       <div id="shahed-promo-message" class="mt-2 text-sm"></div>
     </div>
 
-    <div id="shahed-packages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="col-span-full text-center py-8 text-gray-400">Loading packages...</div>
-    </div>
+    <div id="shahed-packages-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
   </div>
 </div>`,
 
@@ -765,10 +766,10 @@ window.PAGES = {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path>
           </svg>
         </div>
-        <h3 class="text-xl font-semibold">OSN+ Subscriptions</h3>
+        <h3 class="text-xl font-semibold">OSN+ Management</h3>
       </div>
     </div>
-    <p class="text-sm text-gray-400 mb-8">Choose your OSN+ subscription plan</p>
+    <p class="text-sm text-gray-400 mb-6">Available OSN+ Packages</p>
     
     <!-- Promo Code Section -->
     <div class="mb-6 max-w-md">
@@ -790,9 +791,7 @@ window.PAGES = {
       <div id="osn-promo-message" class="mt-2 text-sm"></div>
     </div>
 
-    <div id="osn-packages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="col-span-full text-center py-8 text-gray-400">Loading packages...</div>
-    </div>
+    <div id="osn-packages-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
   </div>
 </div>`
 };

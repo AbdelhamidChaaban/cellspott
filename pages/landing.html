@@ -1,0 +1,576 @@
+<div id="landing-page" class="min-h-screen relative overflow-hidden">
+  <!-- Animated Background -->
+  <div class="landing-background">
+    <div class="landing-bg-gradient"></div>
+    <div class="landing-bg-overlay"></div>
+    <div class="floating-shape floating-shape-1"></div>
+    <div class="floating-shape floating-shape-2"></div>
+    <div class="floating-shape floating-shape-3"></div>
+  </div>
+  
+  <div class="relative z-10">
+    <!-- Navigation Bar -->
+    <nav class="landing-nav flex items-center justify-between px-6 py-4 mb-12 sticky top-0 z-50 mx-auto max-w-7xl">
+      <div class="flex items-center space-x-3 nav-brand">
+        <div class="nav-logo-wrapper">
+          <img src="./Logo.png" alt="Cell Spot Logo" class="w-12 h-12 object-contain">
+        </div>
+        <h1 class="text-2xl font-bold text-white nav-title">Cell Spott</h1>
+      </div>
+      <button onclick="showLogin()" class="nav-signin-btn px-6 py-2.5 rounded-lg text-white font-semibold transition-all">
+        Sign In
+      </button>
+    </nav>
+
+  <div class="container mx-auto px-4 py-8">
+
+    <!-- Hero Section -->
+    <div class="landing-hero text-center mb-20">
+      <h2 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-6">
+        Your All-In-One
+        <span class="gradient-text block mt-2">
+          Cell Spott
+        </span>
+      </h2>
+      <p class="text-lg md:text-xl lg:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto px-4">
+        Instant activation<br>
+        Manage your Alfa packages, credits, and services seamlessly
+      </p>
+      <div class="landing-buttons flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
+        <button onclick="showLogin()" class="hero-button-primary px-8 py-4 rounded-lg text-white font-semibold text-lg relative overflow-hidden pulse-animate">
+          Get Started
+        </button>
+        <button onclick="showLogin()" class="hero-button-secondary px-8 py-4 rounded-lg text-white font-semibold text-lg">
+          Learn More
+        </button>
+      </div>
+    </div>
+
+    <!-- Services Carousel -->
+    <div class="landing-section mb-20">
+      <h3 class="landing-section-title">Our Services</h3>
+      <div class="relative carousel-container">
+        <!-- Carousel Container -->
+        <div id="services-carousel" class="carousel-wrapper overflow-hidden rounded-3xl">
+          <div class="flex transition-transform duration-500 ease-in-out">
+            <!-- Slide 1: U-Share Services -->
+            <div class="min-w-full px-4 md:px-6">
+              <div class="service-card rounded-2xl p-6 md:p-8 shine-effect">
+                <div class="flex items-center gap-4 mb-6">
+                  <div class="w-16 h-16 bg-blue-600/30 rounded-full flex items-center justify-center">
+                    <i data-feather="wifi" class="w-8 h-8 text-blue-400"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-2xl font-bold text-white">U-Share Services</h4>
+                    <p class="text-gray-300">High-speed data packages</p>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div class="bg-white/5 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-white">5.5GB</div>
+                    <div class="text-sm text-gray-400">From 540K LBP</div>
+                  </div>
+                  <div class="bg-white/5 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-white">11GB</div>
+                    <div class="text-sm text-gray-400">From 700K LBP</div>
+                  </div>
+                  <div class="bg-white/5 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-white">15GB</div>
+                    <div class="text-sm text-gray-400">From 820K LBP</div>
+                  </div>
+                  <div class="bg-white/5 rounded-lg p-4 text-center">
+                    <div class="text-2xl font-bold text-white">+More</div>
+                    <div class="text-sm text-gray-400">Packages</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Slide 2: Streaming Services -->
+            <div class="min-w-full px-4 md:px-6">
+              <div class="service-card rounded-2xl p-6 md:p-8 shine-effect">
+                <div class="flex items-center gap-4 mb-6">
+                  <div class="w-16 h-16 bg-purple-600/30 rounded-full flex items-center justify-center">
+                    <i data-feather="tv" class="w-8 h-8 text-purple-400"></i>
+                  </div>
+                  <div>
+                    <h4 class="text-2xl font-bold text-white">Streaming Services</h4>
+                    <p class="text-gray-300">Entertainment packages</p>
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                  <div class="bg-red-600/20 rounded-lg p-6 text-center">
+                    <i data-feather="tv" class="w-10 h-10 mx-auto mb-2 text-red-400"></i>
+                    <div class="font-bold text-white">Netflix</div>
+                  </div>
+                  <div class="bg-purple-600/20 rounded-lg p-6 text-center">
+                    <i data-feather="play-circle" class="w-10 h-10 mx-auto mb-2 text-purple-400"></i>
+                    <div class="font-bold text-white">Shahed</div>
+                  </div>
+                  <div class="bg-blue-600/20 rounded-lg p-6 text-center">
+                    <i data-feather="film" class="w-10 h-10 mx-auto mb-2 text-blue-400"></i>
+                    <div class="font-bold text-white">OSN+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Slide 3: Alfa Gifts & Credits -->
+            <div class="min-w-full px-4 md:px-6">
+              <div class="service-card rounded-2xl p-6 md:p-8 shine-effect">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="bg-white/5 rounded-lg p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div class="w-12 h-12 bg-yellow-600/30 rounded-full flex items-center justify-center">
+                        <i data-feather="gift" class="w-6 h-6 text-yellow-400"></i>
+                      </div>
+                      <h5 class="text-xl font-bold text-white">Alfa Gifts</h5>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-4">Gift data packages to friends and family</p>
+                    <div class="text-blue-400 font-semibold">Available Now →</div>
+                  </div>
+                  <div class="bg-white/5 rounded-lg p-6">
+                    <div class="flex items-center gap-3 mb-4">
+                      <div class="w-12 h-12 bg-green-600/30 rounded-full flex items-center justify-center">
+                        <i data-feather="dollar-sign" class="w-6 h-6 text-green-400"></i>
+                      </div>
+                      <h5 class="text-xl font-bold text-white">Credits</h5>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-4">Top up your account balance instantly</p>
+                    <div class="text-blue-400 font-semibold">From 120K LBP →</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Carousel Controls -->
+        <button id="carousel-prev" class="carousel-btn absolute left-2 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center z-10">
+          <i data-feather="chevron-left" class="w-5 h-5 md:w-6 md:h-6 text-white"></i>
+        </button>
+        <button id="carousel-next" class="carousel-btn absolute right-2 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center z-10">
+          <i data-feather="chevron-right" class="w-5 h-5 md:w-6 md:h-6 text-white"></i>
+        </button>
+        
+        <!-- Carousel Indicators -->
+        <div class="flex justify-center gap-2 mt-6">
+          <div class="carousel-dot active w-2 h-2 rounded-full bg-blue-500"></div>
+          <div class="carousel-dot w-2 h-2 rounded-full bg-white/30"></div>
+          <div class="carousel-dot w-2 h-2 rounded-full bg-white/30"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="landing-section grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-20">
+      <div class="feature-card hover-lift p-6 md:p-8">
+        <div class="feature-icon w-12 h-12 bg-green-600/30 rounded-full flex items-center justify-center mb-4">
+          <i data-feather="zap" class="w-6 h-6 text-green-400"></i>
+        </div>
+        <h4 class="text-xl font-bold text-white mb-3">Instant Activation</h4>
+        <p class="text-gray-400 leading-relaxed">Get your services activated within minutes after payment confirmation</p>
+      </div>
+      
+      <div class="feature-card hover-lift p-6 md:p-8">
+        <div class="feature-icon w-12 h-12 bg-blue-600/30 rounded-full flex items-center justify-center mb-4">
+          <i data-feather="shield" class="w-6 h-6 text-blue-400"></i>
+        </div>
+        <h4 class="text-xl font-bold text-white mb-3">Secure Payments</h4>
+        <p class="text-gray-400 leading-relaxed">All transactions are encrypted and protected with cellspott security team</p>
+      </div>
+      
+      <div class="feature-card hover-lift p-6 md:p-8">
+        <div class="feature-icon w-12 h-12 bg-purple-600/30 rounded-full flex items-center justify-center mb-4">
+          <i data-feather="clock" class="w-6 h-6 text-purple-400"></i>
+        </div>
+        <h4 class="text-xl font-bold text-white mb-3">24/7 Support</h4>
+        <p class="text-gray-400 leading-relaxed">Contact us anytime via WhatsApp for instant assistance</p>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="landing-section">
+      <div class="cta-section text-center rounded-3xl p-8 md:p-12 mb-12 relative overflow-hidden">
+        <h3 class="text-3xl md:text-4xl font-bold text-white mb-4">Ready to Get Started?</h3>
+        <p class="text-lg md:text-xl text-gray-300 mb-8">Join thousands of satisfied customers</p>
+        <button onclick="showLogin()" class="cta-button px-8 md:px-10 py-4 md:py-5 rounded-lg text-white font-bold text-lg md:text-xl relative overflow-hidden">
+          Create Your Account
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="landing-footer text-center text-gray-400 mb-8 px-4">
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 mb-4">
+        <a href="tel:+96103475704" class="flex items-center gap-2 hover:text-white transition-colors">
+          <i data-feather="phone" class="w-4 h-4"></i>
+          <span>+961 03 475 704</span>
+        </a>
+        <span class="text-gray-600 hidden sm:inline">|</span>
+        <a href="https://wa.me/96103475704" target="_blank" class="flex items-center gap-2 hover:text-white transition-colors">
+          <i data-feather="message-circle" class="w-4 h-4"></i>
+          <span>WhatsApp</span>
+        </a>
+      </div>
+      <p class="text-sm">© 2025 Cell Spott - All rights reserved</p>
+    </div>
+  </div>
+  </div>
+</div>
+
+<style>
+  /* Landing Page Inline Styles - Applied immediately */
+  #landing-view {
+    min-height: 100vh !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 25%, #4c1d95 50%, #1e293b 75%, #0f172a 100%) !important;
+    background-size: 400% 400% !important;
+    animation: gradientShift 20s ease infinite !important;
+    overflow-x: hidden !important;
+    color: white !important;
+  }
+
+  #landing-page {
+    color: white !important;
+  }
+
+  #landing-page h1,
+  #landing-page h2,
+  #landing-page h3,
+  #landing-page h4,
+  #landing-page h5,
+  #landing-page p,
+  #landing-page span {
+    color: white !important;
+  }
+
+  #landing-page .text-gray-300,
+  #landing-page .text-gray-400 {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .floating-shape-1 {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: 0s;
+  }
+
+  .floating-shape-2 {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  .floating-shape-3 {
+    animation: float 6s ease-in-out infinite;
+    animation-delay: 4s;
+  }
+
+  .landing-nav {
+    position: relative !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 58, 138, 0.6)) !important;
+    border-radius: 0 0 20px 20px !important;
+    box-shadow: 
+      0 4px 15px rgba(0, 0, 0, 0.1),
+      0 -2px 10px rgba(59, 130, 246, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    animation: fadeInDown 0.8s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-top: none !important;
+  }
+
+  .landing-nav::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(59, 130, 246, 0.5) 20%, 
+      rgba(139, 92, 246, 0.5) 50%, 
+      rgba(59, 130, 246, 0.5) 80%, 
+      transparent 100%) !important;
+  }
+
+  .landing-nav::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(255, 255, 255, 0.1) 20%, 
+      rgba(255, 255, 255, 0.2) 50%, 
+      rgba(255, 255, 255, 0.1) 80%, 
+      transparent 100%) !important;
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .nav-signin-btn {
+    position: relative !important;
+    background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%) !important;
+    box-shadow: 
+      0 4px 15px rgba(59, 130, 246, 0.4),
+      0 2px 5px rgba(59, 130, 246, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    overflow: hidden !important;
+  }
+
+  .nav-signin-btn::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -50% !important;
+    left: -50% !important;
+    width: 200% !important;
+    height: 200% !important;
+    background: linear-gradient(45deg, 
+      transparent 30%, 
+      rgba(255, 255, 255, 0.1) 50%, 
+      transparent 70%) !important;
+    animation: shimmer 3s infinite !important;
+  }
+
+  .nav-signin-btn:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%) !important;
+    box-shadow: 
+      0 6px 20px rgba(59, 130, 246, 0.6),
+      0 4px 10px rgba(59, 130, 246, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-2px) !important;
+  }
+
+  .nav-signin-btn:active {
+    transform: translateY(0) !important;
+    box-shadow: 
+      0 2px 10px rgba(59, 130, 246, 0.4),
+      inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+  }
+
+  .nav-brand {
+    position: relative !important;
+  }
+
+  .nav-logo-wrapper {
+    position: relative !important;
+    padding: 4px !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1)) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .nav-logo-wrapper:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)) !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+    transform: scale(1.05) !important;
+  }
+
+  .nav-title {
+    text-shadow: 0 2px 10px rgba(59, 130, 246, 0.3) !important;
+    letter-spacing: -0.5px !important;
+    background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+  }
+
+  .service-card {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .service-card:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-5px) !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  .hero-button-primary {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4) !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .hero-button-primary:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6) !important;
+  }
+
+  .hero-button-secondary {
+    backdrop-filter: blur(10px) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .hero-button-secondary:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    transform: scale(1.05) !important;
+  }
+
+  .feature-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+
+  .feature-card:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    transform: translateY(-10px) scale(1.02) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .cta-section {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .cta-button {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3) !important;
+  }
+
+  .cta-button:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 15px 50px rgba(59, 130, 246, 0.5) !important;
+  }
+
+  .carousel-btn {
+    backdrop-filter: blur(20px) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .carousel-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    transform: scale(1.1) !important;
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
+  .pulse-animate {
+    animation: pulse 2s infinite !important;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    #landing-page h2 {
+      font-size: 2.5rem !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    #landing-page h2 {
+      font-size: 2rem !important;
+    }
+  }
+</style>
+
+<script>
+  let currentSlide = 0;
+  const totalSlides = 3;
+  
+  function showLogin() {
+    // Hide landing page and show auth view
+    const landingView = document.getElementById('landing-view');
+    const authView = document.getElementById('auth-view');
+    
+    if (landingView) {
+      landingView.style.display = 'none';
+    }
+    if (authView) {
+      authView.classList.remove('hidden');
+      authView.style.display = 'flex';
+    }
+    
+    // Initialize feather icons in auth view
+    if (window.feather) {
+      setTimeout(() => feather.replace(), 100);
+    }
+  }
+  
+  function showSlide(index) {
+    const carousel = document.getElementById('services-carousel');
+    const indicators = document.querySelectorAll('.carousel-dot');
+    
+    currentSlide = index;
+    carousel.querySelector('.flex').style.transform = `translateX(-${index * 100}%)`;
+    
+    indicators.forEach((dot, i) => {
+      if (i === index) {
+        dot.classList.add('active', 'bg-blue-500');
+        dot.classList.remove('bg-white/30');
+      } else {
+        dot.classList.remove('active', 'bg-blue-500');
+        dot.classList.add('bg-white/30');
+      }
+    });
+  }
+  
+  document.getElementById('carousel-next').addEventListener('click', () => {
+    currentSlide = (currentSlide + 1) % totalSlides;
+    showSlide(currentSlide);
+  });
+  
+  document.getElementById('carousel-prev').addEventListener('click', () => {
+    currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+    showSlide(currentSlide);
+  });
+  
+  // Auto-play carousel
+  setInterval(() => {
+    currentSlide = (currentSlide + 1) % totalSlides;
+    showSlide(currentSlide);
+  }, 5000);
+  
+  // Initialize feather icons
+  if (window.feather) {
+    feather.replace();
+  }
+</script>
+

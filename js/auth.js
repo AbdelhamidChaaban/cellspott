@@ -2,6 +2,22 @@
    Handles login, signup, and auth UI
 */
 
+// ---------- Helper Functions ----------
+function showAuth() {
+  const authView = document.getElementById('auth-view');
+  const landingView = document.getElementById('landing-view');
+  const appShell = document.getElementById('app-shell');
+  
+  if (authView) authView.classList.remove('hidden');
+  if (landingView) landingView.classList.add('hidden');
+  if (appShell) appShell.classList.add('hidden');
+}
+
+function hideAuth() {
+  const authView = document.getElementById('auth-view');
+  if (authView) authView.classList.add('hidden');
+}
+
 // ---------- Auth UI ----------
 async function loadAuthForms() {
   const loginContainer = $("#login-form-container");

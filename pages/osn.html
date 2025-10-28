@@ -18,21 +18,41 @@
     <!-- Promo Code Section -->
     <div class="mb-6 max-w-md">
       <label class="block text-sm mb-2 text-gray-300">Have a promo code?</label>
-      <div class="flex gap-3">
-        <input 
-          id="osn-promo-code-input" 
-          type="text" 
-          placeholder="Enter promo code" 
-          class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
-        />
-        <button 
-          id="osn-apply-promo-btn" 
-          class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
-        >
-          Apply
-        </button>
+      <div class="space-y-3">
+        <!-- Primary Promo Code -->
+        <div class="flex gap-3">
+          <input 
+            id="osn-promo-code-input" 
+            type="text" 
+            placeholder="Enter primary promo code" 
+            class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
+          />
+          <button 
+            id="osn-apply-promo-btn" 
+            class="px-6 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors"
+          >
+            Apply
+          </button>
+        </div>
+        <div id="osn-promo-message" class="text-sm"></div>
+        
+        <!-- Secondary Promo Code -->
+        <div class="flex gap-3">
+          <input 
+            id="osn-promo2-code-input" 
+            type="text" 
+            placeholder="Enter secondary promo code" 
+            class="flex-1 px-4 py-2.5 rounded-lg input-dark text-sm"
+          />
+          <button 
+            id="osn-apply-promo2-btn" 
+            class="px-6 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition-colors"
+          >
+            Apply
+          </button>
+        </div>
+        <div id="osn-promo2-message" class="text-sm"></div>
       </div>
-      <div id="osn-promo-message" class="mt-2 text-sm"></div>
     </div>
     
     <div id="osn-packages-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>

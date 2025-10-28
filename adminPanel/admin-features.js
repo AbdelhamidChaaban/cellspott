@@ -552,36 +552,73 @@ async function loadSettings() {
       <!-- Promo Code Settings -->
       <div class="card-bg border border-navy-600 rounded-xl p-6">
         <h3 class="text-lg font-bold mb-4">Promo Code Management</h3>
-        <p class="text-sm text-gray-400 mb-6">Set the active promo code and discount that customers can use when purchasing packages.</p>
+        <p class="text-sm text-gray-400 mb-6">Set the active promo codes and discounts that customers can use when purchasing packages.</p>
         
-        <form id="promo-settings-form" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-2">Active Promo Code</label>
-            <input type="text" id="promo-code" placeholder="Enter promo code (e.g., SUMMER2024)" class="w-full px-4 py-2 rounded-lg input-dark" required>
-            <p class="text-xs text-gray-400 mt-1">This is the code customers will enter to get a discount</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Discount Amount (LBP)</label>
-            <input type="number" id="promo-discount" min="0" step="1000" placeholder="50000" class="w-full px-4 py-2 rounded-lg input-dark" required>
-            <p class="text-xs text-gray-400 mt-1">Enter fixed amount in LBP to subtract from package price (e.g., 50000)</p>
-          </div>
-          <div class="flex items-center gap-2 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-            <i data-feather="info" class="w-5 h-5 text-blue-400"></i>
-            <p class="text-sm text-blue-300">Changes take effect immediately for all customers</p>
-          </div>
-          <button type="submit" class="px-6 py-2 rounded-lg bg-brand hover:bg-brand-dark text-white font-medium transition-colors">
-            Save Promo Code Settings
-          </button>
-        </form>
-        
-        <div id="promo-current-settings" class="mt-6 p-4 bg-navy-800 rounded-lg hidden">
-          <p class="text-sm font-medium mb-2">Current Active Promo Code:</p>
-          <div class="flex items-center justify-between">
+        <!-- First Promo Code -->
+        <div class="mb-8">
+          <h4 class="text-md font-semibold mb-3 text-brand">Primary Promo Code</h4>
+          <form id="promo-settings-form" class="space-y-4">
             <div>
-              <p class="text-lg font-bold text-brand" id="current-promo-code">-</p>
-              <p class="text-sm text-gray-400" id="current-promo-discount">-</p>
+              <label class="block text-sm font-medium mb-2">Active Promo Code</label>
+              <input type="text" id="promo-code" placeholder="Enter promo code (e.g., SUMMER2024)" class="w-full px-4 py-2 rounded-lg input-dark" required>
+              <p class="text-xs text-gray-400 mt-1">This is the code customers will enter to get a discount</p>
             </div>
-            <span class="px-3 py-1 rounded bg-green-500/20 text-green-500 text-sm font-medium">Active</span>
+            <div>
+              <label class="block text-sm font-medium mb-2">Discount Amount (LBP)</label>
+              <input type="number" id="promo-discount" min="0" step="1000" placeholder="50000" class="w-full px-4 py-2 rounded-lg input-dark" required>
+              <p class="text-xs text-gray-400 mt-1">Enter fixed amount in LBP to subtract from package price (e.g., 50000)</p>
+            </div>
+          </form>
+        </div>
+
+        <!-- Second Promo Code -->
+        <div class="mb-6">
+          <h4 class="text-md font-semibold mb-3 text-green-400">Secondary Promo Code</h4>
+          <form id="promo2-settings-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Secondary Promo Code</label>
+              <input type="text" id="promo2-code" placeholder="Enter second promo code (e.g., WINTER2024)" class="w-full px-4 py-2 rounded-lg input-dark" required>
+              <p class="text-xs text-gray-400 mt-1">This is the second code customers can use for additional discounts</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Discount Amount (LBP)</label>
+              <input type="number" id="promo2-discount" min="0" step="1000" placeholder="30000" class="w-full px-4 py-2 rounded-lg input-dark" required>
+              <p class="text-xs text-gray-400 mt-1">Enter fixed amount in LBP to subtract from package price (e.g., 30000)</p>
+            </div>
+          </form>
+        </div>
+
+        <div class="flex items-center gap-2 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
+          <i data-feather="info" class="w-5 h-5 text-blue-400"></i>
+          <p class="text-sm text-blue-300">Changes take effect immediately for all customers. Both promo codes can be used independently.</p>
+        </div>
+        
+        <button onclick="saveAllPromoSettings()" class="px-6 py-2 rounded-lg bg-brand hover:bg-brand-dark text-white font-medium transition-colors">
+          Save All Promo Code Settings
+        </button>
+        
+        <!-- Current Settings Display -->
+        <div id="promo-current-settings" class="mt-6 p-4 bg-navy-800 rounded-lg hidden">
+          <p class="text-sm font-medium mb-3">Current Active Promo Codes:</p>
+          
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 bg-navy-700 rounded-lg">
+              <div>
+                <p class="text-sm font-medium text-brand">Primary Code:</p>
+                <p class="text-lg font-bold text-brand" id="current-promo-code">-</p>
+                <p class="text-sm text-gray-400" id="current-promo-discount">-</p>
+              </div>
+              <span class="px-3 py-1 rounded bg-green-500/20 text-green-500 text-sm font-medium">Active</span>
+            </div>
+            
+            <div class="flex items-center justify-between p-3 bg-navy-700 rounded-lg">
+              <div>
+                <p class="text-sm font-medium text-green-400">Secondary Code:</p>
+                <p class="text-lg font-bold text-green-400" id="current-promo2-code">-</p>
+                <p class="text-sm text-gray-400" id="current-promo2-discount">-</p>
+              </div>
+              <span class="px-3 py-1 rounded bg-green-500/20 text-green-500 text-sm font-medium">Active</span>
+            </div>
           </div>
         </div>
       </div>
@@ -593,12 +630,12 @@ async function loadSettings() {
   // Load saved settings
   await loadSavedSettings();
   
-  // Set up form handler
-  $("#promo-settings-form").addEventListener("submit", savePromoSettings);
+  // No form handler needed - using onclick button instead
 }
 
 async function loadSavedSettings() {
   try {
+    // Load primary promo code
     const settingsDoc = await db.collection("settings").doc("promoCode").get();
     if (settingsDoc.exists) {
       const settings = settingsDoc.data();
@@ -611,51 +648,97 @@ async function loadSavedSettings() {
         $("#promo-discount").value = settings.discount;
         $("#current-promo-discount").textContent = `${Number(settings.discount).toLocaleString()} LBP discount`;
       }
-      
-      // Show current settings
-      if (settings.code && settings.discount !== undefined) {
-        $("#promo-current-settings").classList.remove("hidden");
+    }
+
+    // Load secondary promo code
+    const settings2Doc = await db.collection("settings").doc("promoCode2").get();
+    if (settings2Doc.exists) {
+      const settings2 = settings2Doc.data();
+      if (settings2.code) {
+        $("#promo2-code").value = settings2.code;
+        $("#current-promo2-code").textContent = settings2.code;
       }
+      if (settings2.discount !== undefined) {
+        $("#promo2-discount").value = settings2.discount;
+        $("#current-promo2-discount").textContent = `${Number(settings2.discount).toLocaleString()} LBP discount`;
+      }
+    }
+    
+    // Show current settings if at least one promo code exists
+    const primaryExists = $("#promo-code").value && $("#promo-discount").value;
+    const secondaryExists = $("#promo2-code").value && $("#promo2-discount").value;
+    
+    if (primaryExists || secondaryExists) {
+      $("#promo-current-settings").classList.remove("hidden");
     }
   } catch (error) {
     console.error("Error loading settings:", error);
   }
 }
 
-async function savePromoSettings(e) {
-  e.preventDefault();
-  const code = $("#promo-code").value.trim();
-  const discount = parseFloat($("#promo-discount").value);
+async function saveAllPromoSettings() {
+  const code1 = $("#promo-code").value.trim();
+  const discount1 = parseFloat($("#promo-discount").value);
+  const code2 = $("#promo2-code").value.trim();
+  const discount2 = parseFloat($("#promo2-discount").value);
   
-  if (!code) {
-    alert("Please enter a promo code");
+  // Validate primary promo code
+  if (!code1) {
+    alert("Please enter a primary promo code");
     return;
   }
   
-  if (isNaN(discount) || discount < 0) {
-    alert("Please enter a valid discount amount in LBP (>= 0)");
+  if (isNaN(discount1) || discount1 < 0) {
+    alert("Please enter a valid primary discount amount in LBP (>= 0)");
+    return;
+  }
+
+  // Validate secondary promo code
+  if (!code2) {
+    alert("Please enter a secondary promo code");
+    return;
+  }
+  
+  if (isNaN(discount2) || discount2 < 0) {
+    alert("Please enter a valid secondary discount amount in LBP (>= 0)");
+    return;
+  }
+
+  // Check if codes are different
+  if (code1.toLowerCase() === code2.toLowerCase()) {
+    alert("Primary and secondary promo codes must be different");
     return;
   }
   
   try {
-    // Save to Firebase
-    // Save discount as an amount in LBP
+    // Save primary promo code to Firebase
     await db.collection("settings").doc("promoCode").set({
-      code: code,
-      discount: discount,
+      code: code1,
+      discount: discount1,
+      active: true,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentAdmin.username
+    });
+
+    // Save secondary promo code to Firebase
+    await db.collection("settings").doc("promoCode2").set({
+      code: code2,
+      discount: discount2,
       active: true,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedBy: currentAdmin.username
     });
     
     // Update display
-  $("#current-promo-code").textContent = code;
-  $("#current-promo-discount").textContent = `${Number(discount).toLocaleString()} LBP discount`;
+    $("#current-promo-code").textContent = code1;
+    $("#current-promo-discount").textContent = `${Number(discount1).toLocaleString()} LBP discount`;
+    $("#current-promo2-code").textContent = code2;
+    $("#current-promo2-discount").textContent = `${Number(discount2).toLocaleString()} LBP discount`;
     $("#promo-current-settings").classList.remove("hidden");
     
-  alert(`Promo code saved successfully!\n\nCode: ${code}\nDiscount: ${Number(discount).toLocaleString()} LBP\n\nCustomers can now use this code!`);
+    alert(`Both promo codes saved successfully!\n\nPrimary Code: ${code1} (${Number(discount1).toLocaleString()} LBP)\nSecondary Code: ${code2} (${Number(discount2).toLocaleString()} LBP)\n\nCustomers can now use either code!`);
   } catch (error) {
-    console.error("Error saving promo code:", error);
+    console.error("Error saving promo codes:", error);
     alert("Failed to save promo code settings");
   }
 }
