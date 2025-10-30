@@ -15,7 +15,6 @@ const routes = [
   "netflix",
   "shahed",
   "osn",
-  "welcome-carousel",
 ];
 
 let loadedPages = {};
