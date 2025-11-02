@@ -25,35 +25,20 @@ function openWhatsApp(url) {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   
-  // iOS requires a more direct approach - create and click anchor element immediately
-  // This MUST be done synchronously in the same call stack as user interaction
-  try {
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    
-    // Make it invisible but present in DOM
-    link.style.position = 'fixed';
-    link.style.top = '-9999px';
-    link.style.left = '-9999px';
-    link.style.width = '1px';
-    link.style.height = '1px';
-    link.style.opacity = '0';
-    link.style.pointerEvents = 'none';
-    
-    // Append to body
-    document.body.appendChild(link);
-    
-    // CRITICAL: Click must happen immediately, synchronously
-    // On iOS, any delay breaks the user interaction chain
-    if (isIOS) {
-      // For iOS: Force a synchronous click and handle navigation
-      link.click();
-      // Don't remove immediately on iOS - let the browser handle navigation
-      // The browser will navigate to WhatsApp app, page might unload anyway
-    } else {
-      // For other platforms: Click and clean up
+  if (isIOS) {
+    // iOS: Use window.location.href for maximum reliability
+    // This is the most reliable method on iOS Safari, even though it navigates away
+    // Users will be redirected to WhatsApp app, which is the desired behavior
+    window.location.href = url;
+  } else {
+    // For other platforms: Use anchor element click method
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(link);
       link.click();
       setTimeout(() => {
         try {
@@ -64,21 +49,8 @@ function openWhatsApp(url) {
           // Ignore cleanup errors
         }
       }, 100);
-    }
-  } catch (e) {
-    // Fallback methods
-    console.warn('Primary WhatsApp open method failed, trying fallback:', e);
-    
-    if (isIOS) {
-      // Final iOS fallback: direct navigation (will navigate away from page)
-      try {
-        window.location.href = url;
-      } catch (e2) {
-        // Last resort
-        window.open(url, '_blank');
-      }
-    } else {
-      // Final fallback for non-iOS
+    } catch (e) {
+      // Fallback
       window.open(url, '_blank');
     }
   }

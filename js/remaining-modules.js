@@ -130,36 +130,50 @@ I'll send you the proof image.`;
     
     const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
     
-    // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
-    // Must be first thing in handler - no modal closing, no DOM manipulation, nothing else first!
-    // iOS Safari requires this to be in the exact same call stack as user click
+    // CRITICAL FOR iOS: Detect iOS first
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
     if (isIOS) {
-      // iOS: Create anchor and click it immediately, no function call overhead
-      const link = document.createElement('a');
-      link.href = whatsappUrl;
-      link.target = '_blank';
-      link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
-      document.body.appendChild(link);
-      link.click();
-      // Don't remove - iOS will navigate
+      // iOS: Start saving order in background (fire-and-forget), then immediately open WhatsApp
+      // Don't await - just start the promise so it runs in background
+      (async () => {
+        try {
+          const userDoc = await db.collection("users").doc(uid).get();
+          const userData = userDoc.data() || {};
+          await db.collection("orders").add({
+            uid,
+            packageSizeGB: currentPurchase.sizeGB,
+            priceLBP: currentPurchase.priceLBP,
+            packageId: currentPurchase.packageId || null,
+            secondaryPhone: phone,
+            type: currentPurchase.type || "closed-service",
+            status: "pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          window._cachedUserData = userData;
+        } catch (e) {
+          console.error("Failed to save order on iOS:", e);
+        }
+      })();
+      
+      // Immediately open WhatsApp - this will navigate away, so save happens in background
+      window.location.href = whatsappUrl;
+      return; // Exit early
     } else {
+      // Non-iOS: Open WhatsApp first, then handle everything else
       openWhatsApp(whatsappUrl);
     }
     
-    // Only after WhatsApp is opened, close modal
+    // Only execute on non-iOS devices
     closePurchaseModal();
     
-    // Now do async operations in background
+    // Now do async operations in background (non-iOS only)
     try {
-      // Get user's name from Firestore (update if different)
       const userDoc = await db.collection("users").doc(uid).get();
       const userData = userDoc.data() || {};
       const actualUserName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
       
-      // Save order to Firebase
       const ref = await db.collection("orders").add({
         uid,
         packageSizeGB: currentPurchase.sizeGB,
@@ -171,13 +185,14 @@ I'll send you the proof image.`;
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       
-      // Store user data in cache for future use
       window._cachedUserData = userData;
       
-      // Show success message (non-blocking on iOS)
-      setTimeout(() => {
-        alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
-      }, 500);
+      // Show success message (only on non-iOS)
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+        }, 1000);
+      });
     } catch (e) {
       $("#purchase-error").textContent = e.message || "Failed to submit order";
     }
@@ -336,22 +351,51 @@ I'll send you the proof image.`;
     
     const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
     
-    // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+    // CRITICAL FOR iOS: Detect iOS first
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
     if (isIOS) {
-      const link = document.createElement('a');
-      link.href = whatsappUrl;
-      link.target = '_blank';
-      link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
-      document.body.appendChild(link);
-      link.click();
+      // iOS: Start saving order in background, then immediately open WhatsApp
+      (async () => {
+        try {
+          const userDoc = await db.collection("users").doc(uid).get();
+          const userData = userDoc.data() || {};
+          await db.collection("orders").add({
+            uid,
+            packageSizeGB: currentAlfaPurchase.sizeGB,
+            priceLBP: currentAlfaPurchase.priceLBP,
+            packageId: currentAlfaPurchase.packageId || null,
+            phone: phone,
+            type: "alfa-gift",
+            status: "pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          if (currentAlfaPurchase.packageId) {
+            try {
+              const packageRef = db.collection("packages").doc(currentAlfaPurchase.packageId);
+              await packageRef.update({
+                quantity: firebase.firestore.FieldValue.increment(-1)
+              });
+            } catch (error) {
+              console.error("Error decreasing package quantity:", error);
+            }
+          }
+          window._cachedUserData = userData;
+        } catch (e) {
+          console.error("Failed to save order on iOS:", e);
+        }
+      })();
+      
+      window.location.href = whatsappUrl;
+      return; // Exit early
     } else {
       openWhatsApp(whatsappUrl);
     }
+    
     closeAlfaPurchaseModal();
     
-    // Now do async operations in background
+    // Non-iOS: Continue with normal flow
     try {
       const userDoc = await db.collection("users").doc(uid).get();
       const userData = userDoc.data() || {};
@@ -379,9 +423,11 @@ I'll send you the proof image.`;
         }
       }
       
-      setTimeout(() => {
-        alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
-      }, 500);
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+        }, 1000);
+      });
     } catch (e) {
       $("#alfa-purchase-error").textContent = e.message || "Failed to submit order";
     }
@@ -664,16 +710,12 @@ I'll send you the proof image.`;
       
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       
-      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY as first operation
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       if (isIOS) {
-        const link = document.createElement('a');
-        link.href = whatsappUrl;
-        link.target = '_blank';
-        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
-        document.body.appendChild(link);
-        link.click();
+        window.location.href = whatsappUrl;
+        return; // Exit early - don't execute anything else
       } else {
         openWhatsApp(whatsappUrl);
       }
@@ -909,16 +951,12 @@ I'll send you the proof image.`;
       
       const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
       
-      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY as first operation
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       if (isIOS) {
-        const link = document.createElement('a');
-        link.href = whatsappUrl;
-        link.target = '_blank';
-        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
-        document.body.appendChild(link);
-        link.click();
+        window.location.href = whatsappUrl;
+        return; // Exit early - don't execute anything else
       } else {
         openWhatsApp(whatsappUrl);
       }
@@ -1092,16 +1130,12 @@ I'll send you the proof image.`;
       
       const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
       
-      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY as first operation
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       if (isIOS) {
-        const link = document.createElement('a');
-        link.href = whatsappUrl;
-        link.target = '_blank';
-        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
-        document.body.appendChild(link);
-        link.click();
+        window.location.href = whatsappUrl;
+        return; // Exit early - don't execute anything else
       } else {
         openWhatsApp(whatsappUrl);
       }
@@ -1676,16 +1710,12 @@ I'll send you the proof image.`;
       
       const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
       
-      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY as first operation
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       if (isIOS) {
-        const link = document.createElement('a');
-        link.href = whatsappUrl;
-        link.target = '_blank';
-        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
-        document.body.appendChild(link);
-        link.click();
+        window.location.href = whatsappUrl;
+        return; // Exit early - don't execute anything else
       } else {
         openWhatsApp(whatsappUrl);
       }
