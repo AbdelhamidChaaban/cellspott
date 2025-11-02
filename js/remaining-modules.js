@@ -130,11 +130,26 @@ I'll send you the proof image.`;
     
     const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
     
-    // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
-    // This preserves the user interaction chain on iOS
-    openWhatsApp(whatsappUrl);
+    // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+    // Must be first thing in handler - no modal closing, no DOM manipulation, nothing else first!
+    // iOS Safari requires this to be in the exact same call stack as user click
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
-    // Close modal immediately
+    if (isIOS) {
+      // iOS: Create anchor and click it immediately, no function call overhead
+      const link = document.createElement('a');
+      link.href = whatsappUrl;
+      link.target = '_blank';
+      link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(link);
+      link.click();
+      // Don't remove - iOS will navigate
+    } else {
+      openWhatsApp(whatsappUrl);
+    }
+    
+    // Only after WhatsApp is opened, close modal
     closePurchaseModal();
     
     // Now do async operations in background
@@ -321,8 +336,19 @@ I'll send you the proof image.`;
     
     const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
     
-    // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
-    openWhatsApp(whatsappUrl);
+    // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
+      const link = document.createElement('a');
+      link.href = whatsappUrl;
+      link.target = '_blank';
+      link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(link);
+      link.click();
+    } else {
+      openWhatsApp(whatsappUrl);
+    }
     closeAlfaPurchaseModal();
     
     // Now do async operations in background
@@ -638,8 +664,19 @@ I'll send you the proof image.`;
       
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       
-      // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
-      openWhatsApp(whatsappUrl);
+      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS) {
+        const link = document.createElement('a');
+        link.href = whatsappUrl;
+        link.target = '_blank';
+        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+        document.body.appendChild(link);
+        link.click();
+      } else {
+        openWhatsApp(whatsappUrl);
+      }
       
       // Reset form
       if (cancelBtn) cancelBtn.click();
@@ -872,8 +909,19 @@ I'll send you the proof image.`;
       
       const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
       
-      // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
-      openWhatsApp(whatsappUrl);
+      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS) {
+        const link = document.createElement('a');
+        link.href = whatsappUrl;
+        link.target = '_blank';
+        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+        document.body.appendChild(link);
+        link.click();
+      } else {
+        openWhatsApp(whatsappUrl);
+      }
       
       // Close modal immediately
       modal.classList.add("hidden");
@@ -1044,8 +1092,19 @@ I'll send you the proof image.`;
       
       const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
       
-      // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
-      openWhatsApp(whatsappUrl);
+      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS) {
+        const link = document.createElement('a');
+        link.href = whatsappUrl;
+        link.target = '_blank';
+        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+        document.body.appendChild(link);
+        link.click();
+      } else {
+        openWhatsApp(whatsappUrl);
+      }
       
       // Reset form
       if (cancelBtn) cancelBtn.click();
@@ -1617,8 +1676,19 @@ I'll send you the proof image.`;
       
       const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
       
-      // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
-      openWhatsApp(whatsappUrl);
+      // CRITICAL FOR iOS: Open WhatsApp IMMEDIATELY, synchronously, before ANY other operation
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (isIOS) {
+        const link = document.createElement('a');
+        link.href = whatsappUrl;
+        link.target = '_blank';
+        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+        document.body.appendChild(link);
+        link.click();
+      } else {
+        openWhatsApp(whatsappUrl);
+      }
       
       // Close modal immediately
       modal.classList.add("hidden");

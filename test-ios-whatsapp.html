@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iOS WhatsApp Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-card {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    button {
+      background: #25D366;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 10px 5px;
+      width: 100%;
+    }
+    button:hover {
+      background: #20BA5A;
+    }
+    .info {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+      border-left: 4px solid #2196F3;
+    }
+    .detected {
+      background: #fff3cd;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+      border-left: 4px solid #ffc107;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-card">
+    <h1>📱 iOS WhatsApp Test</h1>
+    
+    <div class="info">
+      <strong>How to test:</strong><br>
+      1. Open Chrome DevTools (F12)<br>
+      2. Press Ctrl+Shift+M (or Cmd+Shift+M on Mac)<br>
+      3. Select "iPhone 12 Pro" or "iPhone 13 Pro"<br>
+      4. Click the test buttons below
+    </div>
+    
+    <div class="detected" id="device-info">
+      <strong>Device Detection:</strong><br>
+      <span id="device-status">Checking...</span>
+    </div>
+    
+    <h3>Test WhatsApp Opening Methods:</h3>
+    
+    <button onclick="testMethod1()">Method 1: Direct Anchor Click (iOS Method)</button>
+    <button onclick="testMethod2()">Method 2: openWhatsApp Function</button>
+    <button onclick="testMethod3()">Method 3: window.location.href</button>
+    <button onclick="testMethod4()">Method 4: window.open</button>
+    
+    <div class="info" style="margin-top: 30px;">
+      <strong>Expected Behavior:</strong><br>
+      On iOS (or when emulating iOS), Methods 1 and 2 should work.<br>
+      Method 3 will navigate away from the page (expected on iOS).<br>
+      Method 4 may be blocked by popup blockers.
+    </div>
+  </div>
+
+  <script>
+    // Detect iOS
+    function detectIOS() {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      return isIOS;
+    }
+
+    // Update device info
+    function updateDeviceInfo() {
+      const isIOS = detectIOS();
+      const deviceStatus = document.getElementById('device-status');
+      deviceStatus.innerHTML = `
+        <strong>User Agent:</strong> ${navigator.userAgent}<br>
+        <strong>Platform:</strong> ${navigator.platform}<br>
+        <strong>Max Touch Points:</strong> ${navigator.maxTouchPoints || 0}<br>
+        <strong>iOS Detected:</strong> <span style="color: ${isIOS ? 'green' : 'red'}; font-weight: bold;">${isIOS ? 'YES ✓' : 'NO ✗'}</span>
+      `;
+      
+      if (isIOS) {
+        deviceStatus.parentElement.style.background = '#d4edda';
+        deviceStatus.parentElement.style.borderLeftColor = '#28a745';
+      }
+    }
+
+    // Test phone number and message
+    const testPhone = '96103475704';
+    const testMessage = 'Test message from iOS WhatsApp test page';
+
+    // Method 1: Direct anchor click (what we're using on iOS)
+    function testMethod1() {
+      const url = `https://wa.me/${testPhone}?text=${encodeURIComponent(testMessage)}`;
+      console.log('Method 1: Direct Anchor Click');
+      console.log('URL:', url);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+      document.body.appendChild(link);
+      link.click();
+      
+      alert('Method 1 executed. Check if WhatsApp opened. If not, it may be blocked.');
+    }
+
+    // Method 2: openWhatsApp function (from utils.js)
+    function testMethod2() {
+      const url = `https://wa.me/${testPhone}?text=${encodeURIComponent(testMessage)}`;
+      console.log('Method 2: openWhatsApp Function');
+      console.log('URL:', url);
+      
+      // Simulate the openWhatsApp function
+      const isIOS = detectIOS();
+      try {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;';
+        document.body.appendChild(link);
+        link.click();
+        if (!isIOS) {
+          setTimeout(() => {
+            try {
+              if (link.parentNode) {
+                document.body.removeChild(link);
+              }
+            } catch (e) {}
+          }, 100);
+        }
+      } catch (e) {
+        console.error('Method 2 failed:', e);
+        if (isIOS) {
+          window.location.href = url;
+        } else {
+          window.open(url, '_blank');
+        }
+      }
+      
+      alert('Method 2 executed. Check if WhatsApp opened.');
+    }
+
+    // Method 3: window.location.href (iOS fallback)
+    function testMethod3() {
+      const url = `https://wa.me/${testPhone}?text=${encodeURIComponent(testMessage)}`;
+      console.log('Method 3: window.location.href');
+      console.log('URL:', url);
+      alert('Method 3 will navigate away from this page. This is expected behavior on iOS.');
+      window.location.href = url;
+    }
+
+    // Method 4: window.open
+    function testMethod4() {
+      const url = `https://wa.me/${testPhone}?text=${encodeURIComponent(testMessage)}`;
+      console.log('Method 4: window.open');
+      console.log('URL:', url);
+      const win = window.open(url, '_blank');
+      if (!win) {
+        alert('Method 4 was blocked by popup blocker. This is expected.');
+      } else {
+        alert('Method 4 executed. Check if WhatsApp opened in new tab.');
+      }
+    }
+
+    // Initialize
+    updateDeviceInfo();
+    
+    // Update on resize (when toggling device emulation)
+    window.addEventListener('resize', updateDeviceInfo);
+  </script>
+</body>
+</html>
+
