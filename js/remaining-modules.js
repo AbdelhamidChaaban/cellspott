@@ -108,11 +108,41 @@ function initPurchaseModal(uid) {
     }
     if (!currentPurchase) return;
 
+    // Prepare message synchronously (use cached user data if available, otherwise "User")
+    let userName = "User";
     try {
-      // Get user's name from Firestore
+      // Try to get user name synchronously from cache, or use default
+      const cachedUserData = window._cachedUserData || {};
+      userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+    } catch (e) {
+      // Use default if cache not available
+    }
+    
+    // Prepare WhatsApp message and URL synchronously
+    const message = `New Purchase Request
+
+Name: ${userName}
+Package: ${currentPurchase.sizeGB}GB
+Price: ${formatLBP(currentPurchase.priceLBP)}
+Secondary Phone: ${phone}
+
+I'll send you the proof image.`;
+    
+    const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
+    
+    // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
+    // This preserves the user interaction chain on iOS
+    openWhatsApp(whatsappUrl);
+    
+    // Close modal immediately
+    closePurchaseModal();
+    
+    // Now do async operations in background
+    try {
+      // Get user's name from Firestore (update if different)
       const userDoc = await db.collection("users").doc(uid).get();
       const userData = userDoc.data() || {};
-      const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
+      const actualUserName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
       
       // Save order to Firebase
       const ref = await db.collection("orders").add({
@@ -126,27 +156,13 @@ function initPurchaseModal(uid) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       
-      // NOTE: Do not decrease package quantity here. Quantity should be adjusted
-      // only after an admin approves the order to avoid reserving stock for
-      // unapproved orders. The admin approval handler will decrement package
-      // quantity and mark the order with `stockAdjusted: true`.
+      // Store user data in cache for future use
+      window._cachedUserData = userData;
       
-      // Prepare message for WhatsApp
-      const message = `New Purchase Request
-
-Name: ${userName}
-Package: ${currentPurchase.sizeGB}GB
-Price: ${formatLBP(currentPurchase.priceLBP)}
-Secondary Phone: ${phone}
-
-I'll send you the proof image.`;
-
-      // Open WhatsApp with pre-filled message
-      const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-      openWhatsApp(whatsappUrl);
-      
-      closePurchaseModal();
-      alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+      // Show success message (non-blocking on iOS)
+      setTimeout(() => {
+        alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+      }, 500);
     } catch (e) {
       $("#purchase-error").textContent = e.message || "Failed to submit order";
     }
@@ -287,13 +303,34 @@ function initAlfaPurchaseModal(uid) {
     }
     if (!currentAlfaPurchase) return;
 
+    // Prepare message synchronously (use cached user data)
+    let userName = "User";
     try {
-      // Get user's name from Firestore
+      const cachedUserData = window._cachedUserData || {};
+      userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+    } catch (e) {}
+    
+    const message = `New Alfa Gift Purchase Request
+
+Name: ${userName}
+Package: ${currentAlfaPurchase.sizeGB}GB
+Price: ${formatLBP(currentAlfaPurchase.priceLBP)}
+Phone Number: ${phone}
+
+I'll send you the proof image.`;
+    
+    const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
+    
+    // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
+    openWhatsApp(whatsappUrl);
+    closeAlfaPurchaseModal();
+    
+    // Now do async operations in background
+    try {
       const userDoc = await db.collection("users").doc(uid).get();
       const userData = userDoc.data() || {};
-      const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
+      window._cachedUserData = userData;
       
-      // Save order to Firebase
       const ref = await db.collection("orders").add({
         uid,
         packageSizeGB: currentAlfaPurchase.sizeGB,
@@ -305,7 +342,6 @@ function initAlfaPurchaseModal(uid) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       
-      // Decrease package quantity if packageId exists
       if (currentAlfaPurchase.packageId) {
         try {
           const packageRef = db.collection("packages").doc(currentAlfaPurchase.packageId);
@@ -317,22 +353,9 @@ function initAlfaPurchaseModal(uid) {
         }
       }
       
-      // Prepare message for WhatsApp
-      const message = `New Alfa Gift Purchase Request
-
-Name: ${userName}
-Package: ${currentAlfaPurchase.sizeGB}GB
-Price: ${formatLBP(currentAlfaPurchase.priceLBP)}
-Phone Number: ${phone}
-
-I'll send you the proof image.`;
-
-      // Open WhatsApp with pre-filled message
-      const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-      openWhatsApp(whatsappUrl);
-      
-      closeAlfaPurchaseModal();
-      alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+      setTimeout(() => {
+        alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+      }, 500);
     } catch (e) {
       $("#alfa-purchase-error").textContent = e.message || "Failed to submit order";
     }
@@ -594,16 +617,39 @@ function initCreditsPage(uid) {
         return;
       }
       
+      // Prepare synchronously
+      let userName = "User";
       try {
-        // Get user's name from Firestore
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+      } catch (e) {}
+      
+      const credits = parseInt(creditsAmount);
+      const price = calculateCreditsPrice(credits);
+      
+      const message = `New Credits Purchase Request
+
+Name: ${userName}
+Number of Credits: ${credits}
+Price: ${formatLBP(price)}
+Phone Number: ${phone}
+
+I'll send you the proof image.`;
+      
+      const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
+      
+      // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
+      openWhatsApp(whatsappUrl);
+      
+      // Reset form
+      if (cancelBtn) cancelBtn.click();
+      
+      // Now do async operations in background
+      try {
         const userDoc = await db.collection("users").doc(uid).get();
         const userData = userDoc.data() || {};
-        const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
+        window._cachedUserData = userData;
         
-        const credits = parseInt(creditsAmount);
-        const price = calculateCreditsPrice(credits);
-        
-        // Save order to Firebase
         await db.collection("orders").add({
           uid,
           phone: phone,
@@ -614,24 +660,9 @@ function initCreditsPage(uid) {
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
         
-        // Prepare message for WhatsApp
-        const message = `New Credits Purchase Request
-
-Name: ${userName}
-Number of Credits: ${credits}
-Price: ${formatLBP(price)}
-Phone Number: ${phone}
-
-I'll send you the proof image.`;
-
-        // Open WhatsApp
-        const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-        openWhatsApp(whatsappUrl);
-        
-        alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
-        
-        // Reset form
-        if (cancelBtn) cancelBtn.click();
+        setTimeout(() => {
+          alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+        }, 500);
       } catch (e) {
         $("#credits-error").textContent = e.message || "Failed to submit order";
       }
@@ -815,50 +846,67 @@ function initValidityPurchaseModal(uid) {
       
       if (!currentValidityPurchase) return;
       
+      // Capture purchase data before clearing
+      const purchaseData = {
+        packageName: currentValidityPurchase.packageName,
+        price: currentValidityPurchase.price
+      };
+      
+      // Prepare synchronously
+      let userName = "User";
+      let userPhone = "";
+      try {
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+        userPhone = cachedUserData.phone || cachedUserData.secondaryPhone || cachedUserData.mainPhone || "";
+      } catch (e) {}
+      
+      const message = `New Purchase Request
+
+Name: ${userName}
+Service: Validity Extension
+Package: ${purchaseData.packageName}
+Price: ${formatLBP(purchaseData.price)}
+
+I'll send you the proof image.`;
+      
+      const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
+      
+      // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
+      openWhatsApp(whatsappUrl);
+      
+      // Close modal immediately
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      paymentConfirmed = false;
+      if (confirmPaymentBtn) {
+        confirmPaymentBtn.classList.remove("bg-green-700");
+        confirmPaymentBtn.classList.add("bg-green-600", "hover:bg-green-700");
+        confirmPaymentBtn.innerHTML = '<i data-feather="check-circle" class="w-5 h-5"></i><span>I have transferred the money</span>';
+        if (window.feather) feather.replace();
+      }
+      currentValidityPurchase = null;
+      
+      // Now do async operations in background
       try {
         const userDoc = await db.collection("users").doc(uid).get();
-        const userData = userDoc.data();
-        const userName = `${userData.firstName} ${userData.lastName}`;
+        const userData = userDoc.data() || {};
+        window._cachedUserData = userData;
+        const actualUserPhone = userData.phone || userData.secondaryPhone || userData.mainPhone || "";
         
-        // Get phone number from user data
-        const userPhone = userData.phone || userData.secondaryPhone || userData.mainPhone || "";
-        
-        // Save order to Firebase
         await db.collection("orders").add({
           uid: uid,
           type: "validity",
-          packageName: currentValidityPurchase.packageName,
-          priceLBP: currentValidityPurchase.price,
-          phone: userPhone,
+          packageName: purchaseData.packageName,
+          priceLBP: purchaseData.price,
+          phone: actualUserPhone,
           status: "pending",
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        const message = `New Purchase Request
-
-Name: ${userName}
-Service: Validity Extension
-Package: ${currentValidityPurchase.packageName}
-Price: ${formatLBP(currentValidityPurchase.price)}
-
-I'll send you the proof image.`;
-        
-        const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
-        openWhatsApp(whatsappUrl);
-        
-        // Show success notification
-        alert("✅ Order saved! Your request is pending approval.");
-        
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-        paymentConfirmed = false;
-        if (confirmPaymentBtn) {
-          confirmPaymentBtn.classList.remove("bg-green-700");
-          confirmPaymentBtn.classList.add("bg-green-600", "hover:bg-green-700");
-          confirmPaymentBtn.innerHTML = '<i data-feather="check-circle" class="w-5 h-5"></i><span>I have transferred the money</span>';
-          if (window.feather) feather.replace();
-        }
-        currentValidityPurchase = null;
+        setTimeout(() => {
+          alert("✅ Order saved! Your request is pending approval.");
+        }, 500);
       } catch (error) {
         console.error("Error:", error);
         $("#validity-purchase-error").textContent = "Failed to process request";
@@ -980,13 +1028,34 @@ function initValidityPage(uid) {
         return;
       }
       
+      // Prepare synchronously
+      let userName = "User";
       try {
-        // Get user's name from Firestore
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+      } catch (e) {}
+      
+      const message = `New Validity Purchase Request
+
+Name: ${userName}
+Phone Number: ${phone}
+
+I'll send you the proof image.`;
+      
+      const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
+      
+      // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
+      openWhatsApp(whatsappUrl);
+      
+      // Reset form
+      if (cancelBtn) cancelBtn.click();
+      
+      // Now do async operations in background
+      try {
         const userDoc = await db.collection("users").doc(uid).get();
         const userData = userDoc.data() || {};
-        const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
+        window._cachedUserData = userData;
         
-        // Save order to Firebase
         await db.collection("orders").add({
           uid,
           phone: phone,
@@ -995,22 +1064,9 @@ function initValidityPage(uid) {
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
         
-        // Prepare message for WhatsApp
-        const message = `New Validity Purchase Request
-
-Name: ${userName}
-Phone Number: ${phone}
-
-I'll send you the proof image.`;
-
-        // Open WhatsApp
-        const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
-        openWhatsApp(whatsappUrl);
-        
-        alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
-        
-        // Reset form
-        if (cancelBtn) cancelBtn.click();
+        setTimeout(() => {
+          alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+        }, 500);
       } catch (e) {
         $("#validity-error").textContent = e.message || "Failed to submit order";
       }
@@ -1534,51 +1590,69 @@ function initStreamingPurchaseModal(uid) {
       
       if (!currentStreamingPurchase) return;
       
+      // Capture purchase data before clearing
+      const purchaseData = {
+        serviceName: currentStreamingPurchase.serviceName,
+        packageName: currentStreamingPurchase.packageName,
+        price: currentStreamingPurchase.price
+      };
+      
+      // Prepare synchronously
+      let userName = "User";
+      let userPhone = "";
+      try {
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+        userPhone = cachedUserData.phone || cachedUserData.secondaryPhone || cachedUserData.mainPhone || "";
+      } catch (e) {}
+      
+      const message = `New Purchase Request
+
+Name: ${userName}
+Service: ${purchaseData.serviceName}
+Package: ${purchaseData.packageName}
+Price: ${formatLBP(purchaseData.price)}
+
+I'll send you the proof image.`;
+      
+      const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
+      
+      // CRITICAL: Open WhatsApp IMMEDIATELY, synchronously, before any async operations
+      openWhatsApp(whatsappUrl);
+      
+      // Close modal immediately
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+      paymentConfirmed = false;
+      if (confirmPaymentBtn) {
+        confirmPaymentBtn.classList.remove("bg-green-700");
+        confirmPaymentBtn.classList.add("bg-green-600", "hover:bg-green-700");
+        confirmPaymentBtn.innerHTML = '<i data-feather="check-circle" class="w-5 h-5"></i><span>I have transferred the money</span>';
+        if (window.feather) feather.replace();
+      }
+      currentStreamingPurchase = null;
+      
+      // Now do async operations in background
       try {
         const userDoc = await db.collection("users").doc(uid).get();
-        const userData = userDoc.data();
-        const userName = `${userData.firstName} ${userData.lastName}`;
+        const userData = userDoc.data() || {};
+        window._cachedUserData = userData;
+        const actualUserPhone = userData.phone || userData.secondaryPhone || userData.mainPhone || "";
         
-        // Get phone number from user data
-        const userPhone = userData.phone || userData.secondaryPhone || userData.mainPhone || "";
-        
-        // Save order to Firebase
         await db.collection("orders").add({
           uid: uid,
           type: "streaming",
-          serviceName: currentStreamingPurchase.serviceName,
-          packageName: currentStreamingPurchase.packageName,
-          priceLBP: currentStreamingPurchase.price,
-          phone: userPhone,
+          serviceName: purchaseData.serviceName,
+          packageName: purchaseData.packageName,
+          priceLBP: purchaseData.price,
+          phone: actualUserPhone,
           status: "pending",
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
         
-        const message = `New Purchase Request
-
-Name: ${userName}
-Service: ${currentStreamingPurchase.serviceName}
-Package: ${currentStreamingPurchase.packageName}
-Price: ${formatLBP(currentStreamingPurchase.price)}
-
-I'll send you the proof image.`;
-        
-        const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
-        openWhatsApp(whatsappUrl);
-        
-        // Show success notification
-        alert("✅ Order saved! Your request is pending approval.");
-        
-        modal.classList.add("hidden");
-        modal.classList.remove("flex");
-        paymentConfirmed = false;
-        if (confirmPaymentBtn) {
-          confirmPaymentBtn.classList.remove("bg-green-700");
-          confirmPaymentBtn.classList.add("bg-green-600", "hover:bg-green-700");
-          confirmPaymentBtn.innerHTML = '<i data-feather="check-circle" class="w-5 h-5"></i><span>I have transferred the money</span>';
-          if (window.feather) feather.replace();
-        }
-        currentStreamingPurchase = null;
+        setTimeout(() => {
+          alert("✅ Order saved! Your request is pending approval.");
+        }, 500);
       } catch (error) {
         console.error("Error:", error);
         $("#streaming-purchase-error").textContent = "Failed to process request";

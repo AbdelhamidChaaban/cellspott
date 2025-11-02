@@ -21,13 +21,31 @@ function isValidLebPhone8(num) {
 
 // ---------- WhatsApp Helper (iOS Compatible) ----------
 function openWhatsApp(url) {
-  // iOS Safari blocks window.open() for external URLs in some contexts
-  // Create a temporary anchor element and click it - this works on iOS
-  const link = document.createElement('a');
-  link.href = url;
-  link.target = '_blank';
-  link.rel = 'noopener noreferrer';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  // Detect iOS
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  
+  if (isIOS) {
+    // iOS Safari: Use window.location.href which reliably opens WhatsApp app
+    // This navigates away but opens WhatsApp directly on iOS
+    window.location.href = url;
+  } else {
+    // For other platforms: Try anchor element first, fallback to window.open
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      // Small delay before removing to ensure click is processed
+      setTimeout(() => {
+        document.body.removeChild(link);
+      }, 100);
+    } catch (e) {
+      // Fallback to window.open if anchor method fails
+      window.open(url, '_blank');
+    }
+  }
 }
