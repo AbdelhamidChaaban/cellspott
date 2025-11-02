@@ -143,7 +143,7 @@ I'll send you the proof image.`;
 
       // Open WhatsApp with pre-filled message
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      openWhatsApp(whatsappUrl);
       
       closePurchaseModal();
       alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
@@ -329,7 +329,7 @@ I'll send you the proof image.`;
 
       // Open WhatsApp with pre-filled message
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      openWhatsApp(whatsappUrl);
       
       closeAlfaPurchaseModal();
       alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
@@ -626,7 +626,7 @@ I'll send you the proof image.`;
 
         // Open WhatsApp
         const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+        openWhatsApp(whatsappUrl);
         
         alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
         
@@ -844,7 +844,7 @@ Price: ${formatLBP(currentValidityPurchase.price)}
 I'll send you the proof image.`;
         
         const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, "_blank");
+        openWhatsApp(whatsappUrl);
         
         // Show success notification
         alert("✅ Order saved! Your request is pending approval.");
@@ -1005,7 +1005,7 @@ I'll send you the proof image.`;
 
         // Open WhatsApp
         const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+        openWhatsApp(whatsappUrl);
         
         alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
         
@@ -1564,7 +1564,7 @@ Price: ${formatLBP(currentStreamingPurchase.price)}
 I'll send you the proof image.`;
         
         const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, "_blank");
+        openWhatsApp(whatsappUrl);
         
         // Show success notification
         alert("✅ Order saved! Your request is pending approval.");

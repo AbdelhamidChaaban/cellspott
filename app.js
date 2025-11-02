@@ -1207,7 +1207,7 @@ I'll send you the proof image.`;
 
       // Open WhatsApp with pre-filled message
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      openWhatsApp(whatsappUrl);
       
       closePurchaseModal();
       alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
@@ -1374,7 +1374,7 @@ I'll send you the proof image.`;
 
       // Open WhatsApp with pre-filled message
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      openWhatsApp(whatsappUrl);
       
       closeAlfaPurchaseModal();
       alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
@@ -1612,7 +1612,7 @@ I'll send you the proof image`;
 
         // Open WhatsApp
         const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+        openWhatsApp(whatsappUrl);
         
         alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
         
@@ -1748,7 +1748,7 @@ I'll send you the proof image.`;
 
         // Open WhatsApp
         const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
+        openWhatsApp(whatsappUrl);
         
         alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
         
@@ -1915,7 +1915,7 @@ I'll send you the proof image.`;
 
       // Open WhatsApp with pre-filled message
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      openWhatsApp(whatsappUrl);
       
       closeCreditsPurchaseModal();
       alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
