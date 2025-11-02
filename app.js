@@ -1159,6 +1159,44 @@ function initPurchaseModal(uid) {
   $("#purchase-cancel").addEventListener("click", closePurchaseModal);
   
   $("#purchase-confirm").addEventListener("click", async () => {
+    // CRITICAL: Check iOS FIRST
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    if (isIOS) {
+      // iOS: Open immediately
+      const phone = $("#purchase-phone")?.value?.trim() || "";
+      const packageSize = currentPurchase?.sizeGB || "N/A";
+      const packagePrice = currentPurchase?.priceLBP || 0;
+      const message = `New Purchase Request\n\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+      const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
+      
+      // Background save
+      const phoneValue = phone;
+      const purchaseData = currentPurchase;
+      const userId = uid;
+      (async () => {
+        try {
+          await db.collection("orders").add({
+            uid: userId,
+            packageSizeGB: purchaseData?.sizeGB,
+            priceLBP: purchaseData?.priceLBP,
+            packageId: purchaseData?.packageId || null,
+            secondaryPhone: phoneValue,
+            type: purchaseData?.type || "closed-service",
+            status: "pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (err) {
+          console.error("Order save error:", err);
+        }
+      })();
+      
+      window.location = whatsappUrl;
+      return;
+    }
+    
+    // Non-iOS flow
     const phone = $("#purchase-phone").value.trim();
     if (!isValidLebPhone8(phone)) {
       $("#purchase-error").textContent = "Phone must be 8 digits (no +961 or leading 0)";
@@ -1167,12 +1205,10 @@ function initPurchaseModal(uid) {
     if (!currentPurchase) return;
 
     try {
-      // Get user's name from Firestore
       const userDoc = await db.collection("users").doc(uid).get();
       const userData = userDoc.data() || {};
       const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
       
-      // Save order to Firebase
       const ref = await db.collection("orders").add({
         uid,
         packageSizeGB: currentPurchase.sizeGB,
@@ -1183,7 +1219,6 @@ function initPurchaseModal(uid) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       
-      // Decrease package quantity if packageId exists
       if (currentPurchase.packageId) {
         try {
           const packageRef = db.collection("packages").doc(currentPurchase.packageId);
@@ -1195,7 +1230,6 @@ function initPurchaseModal(uid) {
         }
       }
       
-      // Prepare message for WhatsApp
       const message = `New Purchase Request
 
  Name: ${userName}
@@ -1205,12 +1239,15 @@ function initPurchaseModal(uid) {
 
 I'll send you the proof image.`;
 
-      // Open WhatsApp with pre-filled message
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       openWhatsApp(whatsappUrl);
-      
       closePurchaseModal();
-      alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+      
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+        }, 1000);
+      });
     } catch (e) {
       $("#purchase-error").textContent = e.message || "Failed to submit order";
     }
@@ -1325,6 +1362,51 @@ function initAlfaPurchaseModal(uid) {
   $("#alfa-purchase-cancel").addEventListener("click", closeAlfaPurchaseModal);
   
   $("#alfa-purchase-confirm").addEventListener("click", async () => {
+    // CRITICAL: Check iOS FIRST
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    if (isIOS) {
+      // iOS: Open immediately
+      const phone = $("#alfa-purchase-phone")?.value?.trim() || "";
+      const packageSize = currentAlfaPurchase?.sizeGB || "N/A";
+      const packagePrice = currentAlfaPurchase?.priceLBP || 0;
+      const message = `New Alfa Gift Purchase Request\n\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+      const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
+      
+      // Background save
+      const phoneValue = phone;
+      const purchaseData = currentAlfaPurchase;
+      const userId = uid;
+      (async () => {
+        try {
+          await db.collection("orders").add({
+            uid: userId,
+            packageSizeGB: purchaseData?.sizeGB,
+            priceLBP: purchaseData?.priceLBP,
+            packageId: purchaseData?.packageId || null,
+            phone: phoneValue,
+            type: "alfa-gift",
+            status: "pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          if (purchaseData?.packageId) {
+            try {
+              await db.collection("packages").doc(purchaseData.packageId).update({
+                quantity: firebase.firestore.FieldValue.increment(-1)
+              });
+            } catch (err) {}
+          }
+        } catch (err) {
+          console.error("Order save error:", err);
+        }
+      })();
+      
+      window.location = whatsappUrl;
+      return;
+    }
+    
+    // Non-iOS flow
     const phone = $("#alfa-purchase-phone").value.trim();
     if (!isValidLebPhone8(phone)) {
       $("#alfa-purchase-error").textContent = "Phone must be 8 digits (no +961 or leading 0)";
@@ -1333,12 +1415,10 @@ function initAlfaPurchaseModal(uid) {
     if (!currentAlfaPurchase) return;
 
     try {
-      // Get user's name from Firestore
       const userDoc = await db.collection("users").doc(uid).get();
       const userData = userDoc.data() || {};
       const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
       
-      // Save order to Firebase
       const ref = await db.collection("orders").add({
         uid,
         packageSizeGB: currentAlfaPurchase.sizeGB,
@@ -1350,7 +1430,6 @@ function initAlfaPurchaseModal(uid) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       
-      // Decrease package quantity if packageId exists
       if (currentAlfaPurchase.packageId) {
         try {
           const packageRef = db.collection("packages").doc(currentAlfaPurchase.packageId);
@@ -1362,7 +1441,6 @@ function initAlfaPurchaseModal(uid) {
         }
       }
       
-      // Prepare message for WhatsApp
       const message = `New Alfa Gift Purchase Request
 
  Name: ${userName}
@@ -1372,12 +1450,15 @@ function initAlfaPurchaseModal(uid) {
 
 I'll send you the proof image.`;
 
-      // Open WhatsApp with pre-filled message
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       openWhatsApp(whatsappUrl);
-      
       closeAlfaPurchaseModal();
-      alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+      
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+        }, 1000);
+      });
     } catch (e) {
       $("#alfa-purchase-error").textContent = e.message || "Failed to submit order";
     }
@@ -1562,14 +1643,48 @@ function initCreditsPage(uid) {
   // Submit button
   if (submitBtn) {
     submitBtn.addEventListener("click", async () => {
-      const phone = phoneInput?.value.trim();
-      const creditsAmount = amountInput?.value.trim();
+      // CRITICAL: Check iOS FIRST
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
+      if (isIOS) {
+        // iOS: Open immediately
+        const phone = phoneInput?.value?.trim() || "";
+        const creditsAmount = amountInput?.value?.trim() || "0";
+        const credits = parseInt(creditsAmount) || 0;
+        const price = credits > 0 ? calculateCreditsPrice(credits) : 0;
+        const message = `New Credits Purchase Request\n\nCredits: ${credits}\nPrice: ${formatLBP(price)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+        const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
+        
+        // Background save
+        (async () => {
+          try {
+            await db.collection("orders").add({
+              uid,
+              phone: phone,
+              creditsAmount: credits,
+              priceLBP: price,
+              type: "credits",
+              status: "pending",
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+          } catch (err) {
+            console.error("Order save error:", err);
+          }
+        })();
+        
+        window.location = whatsappUrl;
+        return;
+      }
+      
+      // Non-iOS flow
+      const phone = phoneInput?.value.trim();
       if (!isValidLebPhone8(phone)) {
         $("#credits-error").textContent = "Phone must be 8 digits (no +961 or leading 0)";
         return;
       }
       
+      const creditsAmount = amountInput?.value.trim();
       if (!creditsAmount || parseInt(creditsAmount) < 1) {
         $("#credits-error").textContent = "Please enter a valid number of credits";
         return;
@@ -1581,7 +1696,6 @@ function initCreditsPage(uid) {
       }
       
       try {
-        // Get user's name from Firestore
         const userDoc = await db.collection("users").doc(uid).get();
         const userData = userDoc.data() || {};
         const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
@@ -1589,7 +1703,6 @@ function initCreditsPage(uid) {
         const credits = parseInt(creditsAmount);
         const price = calculateCreditsPrice(credits);
         
-        // Save order to Firebase
         await db.collection("orders").add({
           uid,
           phone: phone,
@@ -1600,7 +1713,6 @@ function initCreditsPage(uid) {
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
         
-        // Prepare message for WhatsApp
         const message = `New Purchase Request
 
 Name: ${userName}
@@ -1610,14 +1722,16 @@ Number he entered: ${phone}
 
 I'll send you the proof image`;
 
-        // Open WhatsApp
         const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
         openWhatsApp(whatsappUrl);
         
-        alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
-        
-        // Reset form
         if (cancelBtn) cancelBtn.click();
+        
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+          }, 1000);
+        });
       } catch (e) {
         $("#credits-error").textContent = e.message || "Failed to submit order";
       }
@@ -1716,20 +1830,47 @@ function initValidityPage(uid) {
   const submitBtn = $("#validity-submit-btn");
   if (submitBtn) {
     submitBtn.addEventListener("click", async () => {
-      const phone = phoneInput?.value.trim();
+      // CRITICAL: Check iOS FIRST
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
+      if (isIOS) {
+        // iOS: Open immediately
+        const phone = phoneInput?.value?.trim() || "";
+        const message = `New Validity Purchase Request\n\nPhone: ${phone}\n\nI'll send you the proof image.`;
+        const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
+        
+        // Background save
+        (async () => {
+          try {
+            await db.collection("orders").add({
+              uid,
+              phone: phone,
+              type: "validity",
+              status: "pending",
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+          } catch (err) {
+            console.error("Order save error:", err);
+          }
+        })();
+        
+        window.location = whatsappUrl;
+        return;
+      }
+      
+      // Non-iOS flow
+      const phone = phoneInput?.value.trim();
       if (!isValidLebPhone8(phone)) {
         $("#validity-error").textContent = "Phone must be 8 digits (no +961 or leading 0)";
         return;
       }
       
       try {
-        // Get user's name from Firestore
         const userDoc = await db.collection("users").doc(uid).get();
         const userData = userDoc.data() || {};
         const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
         
-        // Save order to Firebase
         await db.collection("orders").add({
           uid,
           phone: phone,
@@ -1738,7 +1879,6 @@ function initValidityPage(uid) {
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
         
-        // Prepare message for WhatsApp
         const message = `New Validity Purchase Request
 
  Name: ${userName}
@@ -1746,14 +1886,16 @@ function initValidityPage(uid) {
 
 I'll send you the proof image.`;
 
-        // Open WhatsApp
         const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
         openWhatsApp(whatsappUrl);
         
-        alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
-        
-        // Reset form
         if (cancelBtn) cancelBtn.click();
+        
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+          }, 1000);
+        });
       } catch (e) {
         $("#validity-error").textContent = e.message || "Failed to submit order";
       }
@@ -1869,14 +2011,53 @@ function initCreditsPurchaseModal(uid) {
   $("#credits-purchase-cancel").addEventListener("click", closeCreditsPurchaseModal);
   
   $("#credits-purchase-confirm").addEventListener("click", async () => {
-    const phone = $("#credits-purchase-phone").value.trim();
-    const creditsAmount = $("#credits-purchase-amount").value.trim();
+    // CRITICAL: Check iOS FIRST
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
+    if (isIOS) {
+      // iOS: Open immediately
+      const phone = $("#credits-purchase-phone")?.value?.trim() || "";
+      const creditsAmount = $("#credits-purchase-amount")?.value?.trim() || "0";
+      const packageSize = currentCreditsPurchase?.sizeGB || "N/A";
+      const packagePrice = currentCreditsPurchase?.priceLBP || 0;
+      const message = `New Credits Purchase Request\n\nPackage: ${packageSize}GB\nCredits: ${creditsAmount}\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+      const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
+      
+      // Background save
+      const phoneValue = phone;
+      const creditsValue = parseInt(creditsAmount) || 0;
+      const purchaseData = currentCreditsPurchase;
+      const userId = uid;
+      (async () => {
+        try {
+          await db.collection("orders").add({
+            uid: userId,
+            packageSizeGB: purchaseData?.sizeGB,
+            priceLBP: purchaseData?.priceLBP,
+            phone: phoneValue,
+            creditsAmount: creditsValue,
+            type: "credits",
+            status: "pending",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (err) {
+          console.error("Order save error:", err);
+        }
+      })();
+      
+      window.location = whatsappUrl;
+      return;
+    }
+    
+    // Non-iOS flow
+    const phone = $("#credits-purchase-phone").value.trim();
     if (!isValidLebPhone8(phone)) {
       $("#credits-purchase-error").textContent = "Phone must be 8 digits (no +961 or leading 0)";
       return;
     }
     
+    const creditsAmount = $("#credits-purchase-amount").value.trim();
     if (!creditsAmount || parseInt(creditsAmount) < 1) {
       $("#credits-purchase-error").textContent = "Please enter a valid number of credits";
       return;
@@ -1885,12 +2066,10 @@ function initCreditsPurchaseModal(uid) {
     if (!currentCreditsPurchase) return;
 
     try {
-      // Get user's name from Firestore
       const userDoc = await db.collection("users").doc(uid).get();
       const userData = userDoc.data() || {};
       const userName = `${userData.firstName || ""} ${userData.lastName || ""}`.trim() || "User";
       
-      // Save order to Firebase
       const ref = await db.collection("orders").add({
         uid,
         packageSizeGB: currentCreditsPurchase.sizeGB,
@@ -1902,7 +2081,6 @@ function initCreditsPurchaseModal(uid) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       
-      // Prepare message for WhatsApp
       const message = `New Credits Purchase Request
 
  Name: ${userName}
@@ -1913,12 +2091,15 @@ function initCreditsPurchaseModal(uid) {
 
 I'll send you the proof image.`;
 
-      // Open WhatsApp with pre-filled message
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       openWhatsApp(whatsappUrl);
-      
       closeCreditsPurchaseModal();
-      alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+      
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          alert("✅ Order saved! WhatsApp opened - please send your transfer proof image.");
+        }, 1000);
+      });
     } catch (e) {
       $("#credits-purchase-error").textContent = e.message || "Failed to submit order";
     }
