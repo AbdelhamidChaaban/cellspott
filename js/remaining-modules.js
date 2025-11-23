@@ -6,6 +6,15 @@ function openPurchaseModal(pkg) {
   $("#purchase-phone").value = "";
   $("#purchase-error").textContent = "";
   
+  // Pre-load user data for iOS WhatsApp messages (fire-and-forget)
+  if (window.uid) {
+    db.collection("users").doc(window.uid).get().then((doc) => {
+      if (doc.exists) {
+        window._cachedUserData = doc.data();
+      }
+    }).catch(() => {});
+  }
+  
   // Reset payment confirmation state
   const confirmPaymentBtn = $("#confirm-payment-btn");
   const secondaryPhoneSection = $("#secondary-phone-section");
@@ -48,6 +57,7 @@ function closePurchaseModal() {
 }
 
 function initPurchaseModal(uid) {
+  window.uid = uid; // Store for modal open functions
   // Copy number button
   const copyBtn = $("#copy-number-btn");
   if (copyBtn) {
@@ -107,14 +117,19 @@ function initPurchaseModal(uid) {
     
     if (isIOS) {
       // iOS: Open WhatsApp IMMEDIATELY - no validation, no checks, nothing first!
-      // We'll use minimal data and open right away
+      // Use cached user data if available
+      let userName = "User";
+      try {
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+      } catch (e) {}
+      
       const phone = $("#purchase-phone")?.value?.trim() || "";
       const packageSize = currentPurchase?.sizeGB || "N/A";
       const packagePrice = currentPurchase?.priceLBP || 0;
-      const userName = "Customer"; // Minimal fallback
       
       // Build URL with minimal encoding
-      const message = `New Purchase Request\n\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+      const message = `New Purchase Request\n\nName: ${userName}\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       
       // Start background save immediately (don't wait)
@@ -222,6 +237,15 @@ function openAlfaPurchaseModal(pkg) {
   $("#alfa-purchase-phone").value = "";
   $("#alfa-purchase-error").textContent = "";
   
+  // Pre-load user data for iOS WhatsApp messages (fire-and-forget)
+  if (window.uid) {
+    db.collection("users").doc(window.uid).get().then((doc) => {
+      if (doc.exists) {
+        window._cachedUserData = doc.data();
+      }
+    }).catch(() => {});
+  }
+  
   // Reset payment confirmation state
   const confirmPaymentBtn = $("#alfa-confirm-payment-btn");
   const phoneSection = $("#alfa-phone-section");
@@ -267,6 +291,7 @@ function closeAlfaPurchaseModal() {
 }
 
 function initAlfaPurchaseModal(uid) {
+  window.uid = uid; // Store for modal open functions
   // Copy number button
   const copyBtn = $("#alfa-copy-number-btn");
   if (copyBtn) {
@@ -327,11 +352,17 @@ function initAlfaPurchaseModal(uid) {
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
     if (isIOS) {
-      // iOS: Open immediately with minimal data
+      // iOS: Open immediately - use cached user data if available
+      let userName = "User";
+      try {
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+      } catch (e) {}
+      
       const phone = $("#alfa-purchase-phone")?.value?.trim() || "";
       const packageSize = currentAlfaPurchase?.sizeGB || "N/A";
       const packagePrice = currentAlfaPurchase?.priceLBP || 0;
-      const message = `New Alfa Gift Purchase Request\n\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+      const message = `New Alfa Gift Purchase Request\n\nName: ${userName}\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       
       // Background save
@@ -517,10 +548,20 @@ function openCreditsPurchaseModal(packageData) {
   modal.classList.remove("hidden");
   modal.classList.add("flex");
   
+  // Pre-load user data for iOS WhatsApp messages (fire-and-forget)
+  if (window.uid) {
+    db.collection("users").doc(window.uid).get().then((doc) => {
+      if (doc.exists) {
+        window._cachedUserData = doc.data();
+      }
+    }).catch(() => {});
+  }
+  
   if (window.feather) feather.replace();
 }
 
 function initCreditsPage(uid) {
+  window.uid = uid; // Store for access in handlers
   console.log("Initializing credits page");
   
   // Credit pricing system
@@ -678,12 +719,18 @@ function initCreditsPage(uid) {
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
       if (isIOS) {
-        // iOS: Open immediately
+        // iOS: Open immediately - use cached user data if available
+        let userName = "User";
+        try {
+          const cachedUserData = window._cachedUserData || {};
+          userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+        } catch (e) {}
+        
         const phone = phoneInput?.value?.trim() || "";
         const creditsAmount = amountInput?.value?.trim() || "0";
         const credits = parseInt(creditsAmount) || 0;
         const price = credits > 0 ? calculateCreditsPrice(credits) : 0;
-        const message = `New Credits Purchase Request\n\nCredits: ${credits}\nPrice: ${formatLBP(price)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+        const message = `New Credits Purchase Request\n\nName: ${userName}\nCredits: ${credits}\nPrice: ${formatLBP(price)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
         const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
         
         // Background save
@@ -888,6 +935,7 @@ async function renderValidityPackages() {
 let currentValidityPurchase = null;
 
 function initValidityPurchaseModal(uid) {
+  window.uid = uid; // Store for modal open functions
   const modal = $("#validity-purchase-modal");
   const cancelBtn = $("#validity-purchase-cancel");
   const confirmBtn = $("#validity-purchase-confirm");
@@ -943,9 +991,15 @@ function initValidityPurchaseModal(uid) {
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
       if (isIOS) {
-        // iOS: Open immediately - skip validation
+        // iOS: Open immediately - use cached user data if available
+        let userName = "User";
+        try {
+          const cachedUserData = window._cachedUserData || {};
+          userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+        } catch (e) {}
+        
         const purchaseData = currentValidityPurchase || {};
-        const message = `New Purchase Request\n\nService: Validity Extension\nPackage: ${purchaseData.packageName || "N/A"}\nPrice: ${formatLBP(purchaseData.price || 0)}\n\nI'll send you the proof image.`;
+        const message = `New Purchase Request\n\nName: ${userName}\nService: Validity Extension\nPackage: ${purchaseData.packageName || "N/A"}\nPrice: ${formatLBP(purchaseData.price || 0)}\n\nI'll send you the proof image.`;
         const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
         
         // Background save
@@ -1056,10 +1110,20 @@ function openValidityPurchaseModal(packageData) {
   modal.classList.remove("hidden");
   modal.classList.add("flex");
   
+  // Pre-load user data for iOS WhatsApp messages (fire-and-forget)
+  if (window.uid) {
+    db.collection("users").doc(window.uid).get().then((doc) => {
+      if (doc.exists) {
+        window._cachedUserData = doc.data();
+      }
+    }).catch(() => {});
+  }
+  
   if (window.feather) feather.replace();
 }
 
 function initValidityPage(uid) {
+  window.uid = uid; // Store for access in handlers
   console.log("Initializing validity page");
   
   // Load validity packages
@@ -1157,9 +1221,15 @@ function initValidityPage(uid) {
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
       if (isIOS) {
-        // iOS: Open immediately
+        // iOS: Open immediately - use cached user data if available
+        let userName = "User";
+        try {
+          const cachedUserData = window._cachedUserData || {};
+          userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+        } catch (e) {}
+        
         const phone = phoneInput?.value?.trim() || "";
-        const message = `New Validity Purchase Request\n\nPhone: ${phone}\n\nI'll send you the proof image.`;
+        const message = `New Validity Purchase Request\n\nName: ${userName}\nPhone: ${phone}\n\nI'll send you the proof image.`;
         const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
         
         // Background save
@@ -1242,6 +1312,7 @@ function closeCreditsPurchaseModal() {
 }
 
 function initCreditsPurchaseModal(uid) {
+  window.uid = uid; // Store for modal open functions
   const modal = $("#credits-purchase-modal");
   const cancelBtn = $("#credits-purchase-cancel");
   const confirmBtn = $("#credits-purchase-confirm");
@@ -1690,6 +1761,7 @@ function initOrderHistory(uid) {
 let currentStreamingPurchase = null;
 
 function initStreamingPurchaseModal(uid) {
+  window.uid = uid; // Store for modal open functions
   const modal = $("#streaming-purchase-modal");
   const cancelBtn = $("#streaming-purchase-cancel");
   const confirmBtn = $("#streaming-purchase-confirm");
@@ -1745,9 +1817,15 @@ function initStreamingPurchaseModal(uid) {
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
       if (isIOS) {
-        // iOS: Open immediately - skip validation
+        // iOS: Open immediately - use cached user data if available
+        let userName = "User";
+        try {
+          const cachedUserData = window._cachedUserData || {};
+          userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+        } catch (e) {}
+        
         const purchaseData = currentStreamingPurchase || {};
-        const message = `New Purchase Request\n\nService: ${purchaseData.serviceName || "N/A"}\nPackage: ${purchaseData.packageName || "N/A"}\nPrice: ${formatLBP(purchaseData.price || 0)}\n\nI'll send you the proof image.`;
+        const message = `New Purchase Request\n\nName: ${userName}\nService: ${purchaseData.serviceName || "N/A"}\nPackage: ${purchaseData.packageName || "N/A"}\nPrice: ${formatLBP(purchaseData.price || 0)}\n\nI'll send you the proof image.`;
         const whatsappUrl = `https://wa.me/96171829887?text=${encodeURIComponent(message)}`;
         
         // Background save
@@ -1860,6 +1938,15 @@ function openStreamingPurchaseModal(packageData) {
   
   modal.classList.remove("hidden");
   modal.classList.add("flex");
+  
+  // Pre-load user data for iOS WhatsApp messages (fire-and-forget)
+  if (window.uid) {
+    db.collection("users").doc(window.uid).get().then((doc) => {
+      if (doc.exists) {
+        window._cachedUserData = doc.data();
+      }
+    }).catch(() => {});
+  }
   
   if (window.feather) feather.replace();
 }

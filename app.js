@@ -1164,11 +1164,17 @@ function initPurchaseModal(uid) {
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
     if (isIOS) {
-      // iOS: Open immediately
+      // iOS: Open immediately - use cached user data if available
+      let userName = "User";
+      try {
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+      } catch (e) {}
+      
       const phone = $("#purchase-phone")?.value?.trim() || "";
       const packageSize = currentPurchase?.sizeGB || "N/A";
       const packagePrice = currentPurchase?.priceLBP || 0;
-      const message = `New Purchase Request\n\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+      const message = `New Purchase Request\n\nName: ${userName}\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       
       // Background save
@@ -1367,11 +1373,17 @@ function initAlfaPurchaseModal(uid) {
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
     if (isIOS) {
-      // iOS: Open immediately
+      // iOS: Open immediately - use cached user data if available
+      let userName = "User";
+      try {
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+      } catch (e) {}
+      
       const phone = $("#alfa-purchase-phone")?.value?.trim() || "";
       const packageSize = currentAlfaPurchase?.sizeGB || "N/A";
       const packagePrice = currentAlfaPurchase?.priceLBP || 0;
-      const message = `New Alfa Gift Purchase Request\n\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+      const message = `New Alfa Gift Purchase Request\n\nName: ${userName}\nPackage: ${packageSize}GB\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       
       // Background save
@@ -1648,12 +1660,18 @@ function initCreditsPage(uid) {
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
       if (isIOS) {
-        // iOS: Open immediately
+        // iOS: Open immediately - use cached user data if available
+        let userName = "User";
+        try {
+          const cachedUserData = window._cachedUserData || {};
+          userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+        } catch (e) {}
+        
         const phone = phoneInput?.value?.trim() || "";
         const creditsAmount = amountInput?.value?.trim() || "0";
         const credits = parseInt(creditsAmount) || 0;
         const price = credits > 0 ? calculateCreditsPrice(credits) : 0;
-        const message = `New Credits Purchase Request\n\nCredits: ${credits}\nPrice: ${formatLBP(price)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+        const message = `New Credits Purchase Request\n\nName: ${userName}\nCredits: ${credits}\nPrice: ${formatLBP(price)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
         const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
         
         // Background save
@@ -1835,9 +1853,15 @@ function initValidityPage(uid) {
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
       if (isIOS) {
-        // iOS: Open immediately
+        // iOS: Open immediately - use cached user data if available
+        let userName = "User";
+        try {
+          const cachedUserData = window._cachedUserData || {};
+          userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+        } catch (e) {}
+        
         const phone = phoneInput?.value?.trim() || "";
-        const message = `New Validity Purchase Request\n\nPhone: ${phone}\n\nI'll send you the proof image.`;
+        const message = `New Validity Purchase Request\n\nName: ${userName}\nPhone: ${phone}\n\nI'll send you the proof image.`;
         const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
         
         // Background save
@@ -2016,12 +2040,18 @@ function initCreditsPurchaseModal(uid) {
                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
     if (isIOS) {
-      // iOS: Open immediately
+      // iOS: Open immediately - use cached user data if available
+      let userName = "User";
+      try {
+        const cachedUserData = window._cachedUserData || {};
+        userName = `${cachedUserData.firstName || ""} ${cachedUserData.lastName || ""}`.trim() || "User";
+      } catch (e) {}
+      
       const phone = $("#credits-purchase-phone")?.value?.trim() || "";
       const creditsAmount = $("#credits-purchase-amount")?.value?.trim() || "0";
       const packageSize = currentCreditsPurchase?.sizeGB || "N/A";
       const packagePrice = currentCreditsPurchase?.priceLBP || 0;
-      const message = `New Credits Purchase Request\n\nPackage: ${packageSize}GB\nCredits: ${creditsAmount}\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
+      const message = `New Credits Purchase Request\n\nName: ${userName}\nPackage: ${packageSize}GB\nCredits: ${creditsAmount}\nPrice: ${formatLBP(packagePrice)}\nPhone: ${phone}\n\nI'll send you the proof image.`;
       const whatsappUrl = `https://wa.me/96103475704?text=${encodeURIComponent(message)}`;
       
       // Background save
