@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cell Spott</title>
   
+  <!-- Preconnect to external CDNs for faster loading -->
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com">
+  <link rel="preconnect" href="https://unpkg.com">
+  
   <!-- CSS Files -->
   <link rel="stylesheet" href="./css/main.css">
   <link rel="stylesheet" href="./css/auth.css">
@@ -22,7 +29,7 @@
     }
   </script>
   
-  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://unpkg.com/feather-icons" defer></script>
   <link rel="icon" type="image/png" href="./Logo.png">
   
   <!-- Firebase SDK (must load synchronously before firebase-init.js) -->
@@ -31,8 +38,11 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   
-  <script defer src="./pages-loader.js"></script>
+  <!-- Initialize Firebase immediately after SDK loads -->
   <script src="./js/firebase-init.js"></script>
+  
+  <!-- Load other scripts asynchronously -->
+  <script defer src="./pages-loader.js"></script>
   <script defer src="./js/landing-loader.js"></script>
   <script defer src="./js/utils.js"></script>
   <script defer src="./js/theme.js"></script>
