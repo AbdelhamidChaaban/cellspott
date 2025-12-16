@@ -52,6 +52,31 @@ let osnPromo2Discount = 0;
 let validityPromo2CodeApplied = false;
 let validityPromo2Discount = 0;
 
+// ---------- Third Promo Code State ----------
+let promo3CodeApplied = false;
+let promo3Discount = 0;
+
+let alfaPromo3CodeApplied = false;
+let alfaPromo3Discount = 0;
+
+let openPromo3CodeApplied = false;
+let openPromo3Discount = 0;
+
+let creditsPromo3CodeApplied = false;
+let creditsPromo3Discount = 0;
+
+let netflixPromo3CodeApplied = false;
+let netflixPromo3Discount = 0;
+
+let shahedPromo3CodeApplied = false;
+let shahedPromo3Discount = 0;
+
+let osnPromo3CodeApplied = false;
+let osnPromo3Discount = 0;
+
+let validityPromo3CodeApplied = false;
+let validityPromo3Discount = 0;
+
 // ---------- Closed Services Promo Code ----------
 async function applyPromoCode() {
   const input = $("#promo-code-input");
@@ -68,14 +93,16 @@ async function applyPromoCode() {
   }
   
   try {
-    // Load both promo codes from Firebase
-    const [promoDoc, promo2Doc] = await Promise.all([
+    // Load all three promo codes from Firebase
+    const [promoDoc, promo2Doc, promo3Doc] = await Promise.all([
       db.collection("settings").doc("promoCode").get(),
-      db.collection("settings").doc("promoCode2").get()
+      db.collection("settings").doc("promoCode2").get(),
+      db.collection("settings").doc("promoCode3").get()
     ]);
     
     let promoData = null;
     let promo2Data = null;
+    let promo3Data = null;
     
     if (promoDoc.exists) {
       promoData = promoDoc.data();
@@ -83,6 +110,10 @@ async function applyPromoCode() {
     
     if (promo2Doc.exists) {
       promo2Data = promo2Doc.data();
+    }
+    
+    if (promo3Doc.exists) {
+      promo3Data = promo3Doc.data();
     }
     
     // Check if code matches first promo code
@@ -101,6 +132,17 @@ async function applyPromoCode() {
       promoCodeApplied = true;
       promoDiscount = promo2Data.discount; // amount LBP
       message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo2Data.discount).toLocaleString()} LBP off on all packages</span>`;
+      input.disabled = true;
+      if (applyBtn) applyBtn.disabled = true;
+      renderPackages(); // Re-render with discount
+      return;
+    }
+    
+    // Check if code matches third promo code
+    if (promo3Data && promo3Data.code === code && promo3Data.active) {
+      promoCodeApplied = true;
+      promoDiscount = promo3Data.discount; // amount LBP
+      message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo3Data.discount).toLocaleString()} LBP off on all packages</span>`;
       input.disabled = true;
       if (applyBtn) applyBtn.disabled = true;
       renderPackages(); // Re-render with discount
@@ -141,14 +183,16 @@ async function applyAlfaPromoCode() {
   }
   
   try {
-    // Load both promo codes from Firebase
-    const [promoDoc, promo2Doc] = await Promise.all([
+    // Load all three promo codes from Firebase
+    const [promoDoc, promo2Doc, promo3Doc] = await Promise.all([
       db.collection("settings").doc("promoCode").get(),
-      db.collection("settings").doc("promoCode2").get()
+      db.collection("settings").doc("promoCode2").get(),
+      db.collection("settings").doc("promoCode3").get()
     ]);
     
     let promoData = null;
     let promo2Data = null;
+    let promo3Data = null;
     
     if (promoDoc.exists) {
       promoData = promoDoc.data();
@@ -156,6 +200,10 @@ async function applyAlfaPromoCode() {
     
     if (promo2Doc.exists) {
       promo2Data = promo2Doc.data();
+    }
+    
+    if (promo3Doc.exists) {
+      promo3Data = promo3Doc.data();
     }
     
     // Check if code matches first promo code
@@ -174,6 +222,17 @@ async function applyAlfaPromoCode() {
       alfaPromoCodeApplied = true;
       alfaPromoDiscount = promo2Data.discount; // amount LBP
       message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo2Data.discount).toLocaleString()} LBP off on all packages</span>`;
+      input.disabled = true;
+      if (applyBtn) applyBtn.disabled = true;
+      renderAlfaPackages(); // Re-render with discount
+      return;
+    }
+    
+    // Check if code matches third promo code
+    if (promo3Data && promo3Data.code === code && promo3Data.active) {
+      alfaPromoCodeApplied = true;
+      alfaPromoDiscount = promo3Data.discount; // amount LBP
+      message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo3Data.discount).toLocaleString()} LBP off on all packages</span>`;
       input.disabled = true;
       if (applyBtn) applyBtn.disabled = true;
       renderAlfaPackages(); // Re-render with discount
@@ -214,14 +273,16 @@ async function applyOpenPromoCode() {
   }
   
   try {
-    // Load both promo codes from Firebase
-    const [promoDoc, promo2Doc] = await Promise.all([
+    // Load all three promo codes from Firebase
+    const [promoDoc, promo2Doc, promo3Doc] = await Promise.all([
       db.collection("settings").doc("promoCode").get(),
-      db.collection("settings").doc("promoCode2").get()
+      db.collection("settings").doc("promoCode2").get(),
+      db.collection("settings").doc("promoCode3").get()
     ]);
     
     let promoData = null;
     let promo2Data = null;
+    let promo3Data = null;
     
     if (promoDoc.exists) {
       promoData = promoDoc.data();
@@ -229,6 +290,10 @@ async function applyOpenPromoCode() {
     
     if (promo2Doc.exists) {
       promo2Data = promo2Doc.data();
+    }
+    
+    if (promo3Doc.exists) {
+      promo3Data = promo3Doc.data();
     }
     
     // Check if code matches first promo code
@@ -247,6 +312,17 @@ async function applyOpenPromoCode() {
       openPromoCodeApplied = true;
       openPromoDiscount = promo2Data.discount; // amount LBP
       message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo2Data.discount).toLocaleString()} LBP off on all packages</span>`;
+      input.disabled = true;
+      if (applyBtn) applyBtn.disabled = true;
+      renderOpenPackages(); // Re-render with discount
+      return;
+    }
+    
+    // Check if code matches third promo code
+    if (promo3Data && promo3Data.code === code && promo3Data.active) {
+      openPromoCodeApplied = true;
+      openPromoDiscount = promo3Data.discount; // amount LBP
+      message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo3Data.discount).toLocaleString()} LBP off on all packages</span>`;
       input.disabled = true;
       if (applyBtn) applyBtn.disabled = true;
       renderOpenPackages(); // Re-render with discount
@@ -287,14 +363,16 @@ async function applyNetflixPromoCode() {
   }
   
   try {
-    // Load both promo codes from Firebase
-    const [promoDoc, promo2Doc] = await Promise.all([
+    // Load all three promo codes from Firebase
+    const [promoDoc, promo2Doc, promo3Doc] = await Promise.all([
       db.collection("settings").doc("promoCode").get(),
-      db.collection("settings").doc("promoCode2").get()
+      db.collection("settings").doc("promoCode2").get(),
+      db.collection("settings").doc("promoCode3").get()
     ]);
     
     let promoData = null;
     let promo2Data = null;
+    let promo3Data = null;
     
     if (promoDoc.exists) {
       promoData = promoDoc.data();
@@ -302,6 +380,10 @@ async function applyNetflixPromoCode() {
     
     if (promo2Doc.exists) {
       promo2Data = promo2Doc.data();
+    }
+    
+    if (promo3Doc.exists) {
+      promo3Data = promo3Doc.data();
     }
     
     // Check if code matches first promo code
@@ -320,6 +402,17 @@ async function applyNetflixPromoCode() {
       netflixPromoCodeApplied = true;
       netflixPromoDiscount = promo2Data.discount; // amount LBP
       message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo2Data.discount).toLocaleString()} LBP off on all packages</span>`;
+      input.disabled = true;
+      if (applyBtn) applyBtn.disabled = true;
+      renderStreamingPackages("Netflix"); // Re-render with discount
+      return;
+    }
+    
+    // Check if code matches third promo code
+    if (promo3Data && promo3Data.code === code && promo3Data.active) {
+      netflixPromoCodeApplied = true;
+      netflixPromoDiscount = promo3Data.discount; // amount LBP
+      message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo3Data.discount).toLocaleString()} LBP off on all packages</span>`;
       input.disabled = true;
       if (applyBtn) applyBtn.disabled = true;
       renderStreamingPackages("Netflix"); // Re-render with discount
@@ -360,14 +453,16 @@ async function applyShahedPromoCode() {
   }
   
   try {
-    // Load both promo codes from Firebase
-    const [promoDoc, promo2Doc] = await Promise.all([
+    // Load all three promo codes from Firebase
+    const [promoDoc, promo2Doc, promo3Doc] = await Promise.all([
       db.collection("settings").doc("promoCode").get(),
-      db.collection("settings").doc("promoCode2").get()
+      db.collection("settings").doc("promoCode2").get(),
+      db.collection("settings").doc("promoCode3").get()
     ]);
     
     let promoData = null;
     let promo2Data = null;
+    let promo3Data = null;
     
     if (promoDoc.exists) {
       promoData = promoDoc.data();
@@ -375,6 +470,10 @@ async function applyShahedPromoCode() {
     
     if (promo2Doc.exists) {
       promo2Data = promo2Doc.data();
+    }
+    
+    if (promo3Doc.exists) {
+      promo3Data = promo3Doc.data();
     }
     
     // Check if code matches first promo code
@@ -393,6 +492,17 @@ async function applyShahedPromoCode() {
       shahedPromoCodeApplied = true;
       shahedPromoDiscount = promo2Data.discount; // amount LBP
       message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo2Data.discount).toLocaleString()} LBP off on all packages</span>`;
+      input.disabled = true;
+      if (applyBtn) applyBtn.disabled = true;
+      renderStreamingPackages("Shahed"); // Re-render with discount
+      return;
+    }
+    
+    // Check if code matches third promo code
+    if (promo3Data && promo3Data.code === code && promo3Data.active) {
+      shahedPromoCodeApplied = true;
+      shahedPromoDiscount = promo3Data.discount; // amount LBP
+      message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo3Data.discount).toLocaleString()} LBP off on all packages</span>`;
       input.disabled = true;
       if (applyBtn) applyBtn.disabled = true;
       renderStreamingPackages("Shahed"); // Re-render with discount
@@ -433,14 +543,16 @@ async function applyOsnPromoCode() {
   }
   
   try {
-    // Load both promo codes from Firebase
-    const [promoDoc, promo2Doc] = await Promise.all([
+    // Load all three promo codes from Firebase
+    const [promoDoc, promo2Doc, promo3Doc] = await Promise.all([
       db.collection("settings").doc("promoCode").get(),
-      db.collection("settings").doc("promoCode2").get()
+      db.collection("settings").doc("promoCode2").get(),
+      db.collection("settings").doc("promoCode3").get()
     ]);
     
     let promoData = null;
     let promo2Data = null;
+    let promo3Data = null;
     
     if (promoDoc.exists) {
       promoData = promoDoc.data();
@@ -448,6 +560,10 @@ async function applyOsnPromoCode() {
     
     if (promo2Doc.exists) {
       promo2Data = promo2Doc.data();
+    }
+    
+    if (promo3Doc.exists) {
+      promo3Data = promo3Doc.data();
     }
     
     // Check if code matches first promo code
@@ -466,6 +582,17 @@ async function applyOsnPromoCode() {
       osnPromoCodeApplied = true;
       osnPromoDiscount = promo2Data.discount; // amount LBP
       message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo2Data.discount).toLocaleString()} LBP off on all packages</span>`;
+      input.disabled = true;
+      if (applyBtn) applyBtn.disabled = true;
+      renderStreamingPackages("OSN+"); // Re-render with discount
+      return;
+    }
+    
+    // Check if code matches third promo code
+    if (promo3Data && promo3Data.code === code && promo3Data.active) {
+      osnPromoCodeApplied = true;
+      osnPromoDiscount = promo3Data.discount; // amount LBP
+      message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo3Data.discount).toLocaleString()} LBP off on all packages</span>`;
       input.disabled = true;
       if (applyBtn) applyBtn.disabled = true;
       renderStreamingPackages("OSN+"); // Re-render with discount
@@ -507,14 +634,16 @@ async function applyValidityPromoCode() {
   }
   
   try {
-    // Load both promo codes from Firebase
-    const [promoDoc, promo2Doc] = await Promise.all([
+    // Load all three promo codes from Firebase
+    const [promoDoc, promo2Doc, promo3Doc] = await Promise.all([
       db.collection("settings").doc("promoCode").get(),
-      db.collection("settings").doc("promoCode2").get()
+      db.collection("settings").doc("promoCode2").get(),
+      db.collection("settings").doc("promoCode3").get()
     ]);
     
     let promoData = null;
     let promo2Data = null;
+    let promo3Data = null;
     
     if (promoDoc.exists) {
       promoData = promoDoc.data();
@@ -522,6 +651,10 @@ async function applyValidityPromoCode() {
     
     if (promo2Doc.exists) {
       promo2Data = promo2Doc.data();
+    }
+    
+    if (promo3Doc.exists) {
+      promo3Data = promo3Doc.data();
     }
     
     // Check if code matches first promo code
@@ -540,6 +673,17 @@ async function applyValidityPromoCode() {
       validityPromoCodeApplied = true;
       validityPromoDiscount = promo2Data.discount; // amount LBP
       message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo2Data.discount).toLocaleString()} LBP off on all packages</span>`;
+      input.disabled = true;
+      if (applyBtn) applyBtn.disabled = true;
+      renderValidityPackages(); // Re-render with discount
+      return;
+    }
+    
+    // Check if code matches third promo code
+    if (promo3Data && promo3Data.code === code && promo3Data.active) {
+      validityPromoCodeApplied = true;
+      validityPromoDiscount = promo3Data.discount; // amount LBP
+      message.innerHTML = `<span class="text-green-400">✓ Promo code applied! ${Number(promo3Data.discount).toLocaleString()} LBP off on all packages</span>`;
       input.disabled = true;
       if (applyBtn) applyBtn.disabled = true;
       renderValidityPackages(); // Re-render with discount

@@ -572,7 +572,7 @@ async function loadSettings() {
         </div>
 
         <!-- Second Promo Code -->
-        <div class="mb-6">
+        <div class="mb-8">
           <h4 class="text-md font-semibold mb-3 text-green-400">Secondary Promo Code</h4>
           <form id="promo2-settings-form" class="space-y-4">
             <div>
@@ -588,9 +588,26 @@ async function loadSettings() {
           </form>
         </div>
 
+        <!-- Third Promo Code -->
+        <div class="mb-6">
+          <h4 class="text-md font-semibold mb-3 text-purple-400">Third Promo Code</h4>
+          <form id="promo3-settings-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium mb-2">Third Promo Code</label>
+              <input type="text" id="promo3-code" placeholder="Enter third promo code (e.g., SPRING2024)" class="w-full px-4 py-2 rounded-lg input-dark" required>
+              <p class="text-xs text-gray-400 mt-1">This is the third code customers can use for additional discounts</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-2">Discount Amount (LBP)</label>
+              <input type="number" id="promo3-discount" min="0" step="1000" placeholder="25000" class="w-full px-4 py-2 rounded-lg input-dark" required>
+              <p class="text-xs text-gray-400 mt-1">Enter fixed amount in LBP to subtract from package price (e.g., 25000)</p>
+            </div>
+          </form>
+        </div>
+
         <div class="flex items-center gap-2 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
           <i data-feather="info" class="w-5 h-5 text-blue-400"></i>
-          <p class="text-sm text-blue-300">Changes take effect immediately for all customers. Both promo codes can be used independently.</p>
+          <p class="text-sm text-blue-300">Changes take effect immediately for all customers. All three promo codes can be used independently.</p>
         </div>
         
         <button onclick="saveAllPromoSettings()" class="px-6 py-2 rounded-lg bg-brand hover:bg-brand-dark text-white font-medium transition-colors">
@@ -616,6 +633,15 @@ async function loadSettings() {
                 <p class="text-sm font-medium text-green-400">Secondary Code:</p>
                 <p class="text-lg font-bold text-green-400" id="current-promo2-code">-</p>
                 <p class="text-sm text-gray-400" id="current-promo2-discount">-</p>
+              </div>
+              <span class="px-3 py-1 rounded bg-green-500/20 text-green-500 text-sm font-medium">Active</span>
+            </div>
+            
+            <div class="flex items-center justify-between p-3 bg-navy-700 rounded-lg">
+              <div>
+                <p class="text-sm font-medium text-purple-400">Third Code:</p>
+                <p class="text-lg font-bold text-purple-400" id="current-promo3-code">-</p>
+                <p class="text-sm text-gray-400" id="current-promo3-discount">-</p>
               </div>
               <span class="px-3 py-1 rounded bg-green-500/20 text-green-500 text-sm font-medium">Active</span>
             </div>
@@ -663,12 +689,27 @@ async function loadSavedSettings() {
         $("#current-promo2-discount").textContent = `${Number(settings2.discount).toLocaleString()} LBP discount`;
       }
     }
+
+    // Load third promo code
+    const settings3Doc = await db.collection("settings").doc("promoCode3").get();
+    if (settings3Doc.exists) {
+      const settings3 = settings3Doc.data();
+      if (settings3.code) {
+        $("#promo3-code").value = settings3.code;
+        $("#current-promo3-code").textContent = settings3.code;
+      }
+      if (settings3.discount !== undefined) {
+        $("#promo3-discount").value = settings3.discount;
+        $("#current-promo3-discount").textContent = `${Number(settings3.discount).toLocaleString()} LBP discount`;
+      }
+    }
     
     // Show current settings if at least one promo code exists
     const primaryExists = $("#promo-code").value && $("#promo-discount").value;
     const secondaryExists = $("#promo2-code").value && $("#promo2-discount").value;
+    const thirdExists = $("#promo3-code").value && $("#promo3-discount").value;
     
-    if (primaryExists || secondaryExists) {
+    if (primaryExists || secondaryExists || thirdExists) {
       $("#promo-current-settings").classList.remove("hidden");
     }
   } catch (error) {
@@ -681,13 +722,15 @@ async function saveAllPromoSettings() {
   const discount1 = parseFloat($("#promo-discount").value);
   const code2 = $("#promo2-code").value.trim();
   const discount2 = parseFloat($("#promo2-discount").value);
+  const code3 = $("#promo3-code").value.trim();
+  const discount3 = parseFloat($("#promo3-discount").value);
   
   // Validate primary promo code
   if (!code1) {
     alert("Please enter a primary promo code");
     return;
   }
-  
+
   if (isNaN(discount1) || discount1 < 0) {
     alert("Please enter a valid primary discount amount in LBP (>= 0)");
     return;
@@ -698,15 +741,27 @@ async function saveAllPromoSettings() {
     alert("Please enter a secondary promo code");
     return;
   }
-  
+
   if (isNaN(discount2) || discount2 < 0) {
     alert("Please enter a valid secondary discount amount in LBP (>= 0)");
     return;
   }
 
+  // Validate third promo code
+  if (!code3) {
+    alert("Please enter a third promo code");
+    return;
+  }
+
+  if (isNaN(discount3) || discount3 < 0) {
+    alert("Please enter a valid third discount amount in LBP (>= 0)");
+    return;
+  }
+
   // Check if codes are different
-  if (code1.toLowerCase() === code2.toLowerCase()) {
-    alert("Primary and secondary promo codes must be different");
+  const codes = [code1.toLowerCase(), code2.toLowerCase(), code3.toLowerCase()];
+  if (codes.length !== new Set(codes).size) {
+    alert("All promo codes must be different from each other");
     return;
   }
   
@@ -728,15 +783,26 @@ async function saveAllPromoSettings() {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedBy: currentAdmin.username
     });
+
+    // Save third promo code to Firebase
+    await db.collection("settings").doc("promoCode3").set({
+      code: code3,
+      discount: discount3,
+      active: true,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentAdmin.username
+    });
     
     // Update display
     $("#current-promo-code").textContent = code1;
     $("#current-promo-discount").textContent = `${Number(discount1).toLocaleString()} LBP discount`;
     $("#current-promo2-code").textContent = code2;
     $("#current-promo2-discount").textContent = `${Number(discount2).toLocaleString()} LBP discount`;
+    $("#current-promo3-code").textContent = code3;
+    $("#current-promo3-discount").textContent = `${Number(discount3).toLocaleString()} LBP discount`;
     $("#promo-current-settings").classList.remove("hidden");
     
-    alert(`Both promo codes saved successfully!\n\nPrimary Code: ${code1} (${Number(discount1).toLocaleString()} LBP)\nSecondary Code: ${code2} (${Number(discount2).toLocaleString()} LBP)\n\nCustomers can now use either code!`);
+    alert(`All three promo codes saved successfully!\n\nPrimary Code: ${code1} (${Number(discount1).toLocaleString()} LBP)\nSecondary Code: ${code2} (${Number(discount2).toLocaleString()} LBP)\nThird Code: ${code3} (${Number(discount3).toLocaleString()} LBP)\n\nCustomers can now use any of these codes!`);
   } catch (error) {
     console.error("Error saving promo codes:", error);
     alert("Failed to save promo code settings");
