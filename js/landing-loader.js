@@ -115,10 +115,13 @@ window.goToLanding = function() {
   }
 };
 
-// Load landing page when DOM is ready
+// Load landing page immediately when script loads (not waiting for DOMContentLoaded)
+// This ensures the landing page appears as fast as possible
 if (document.readyState === 'loading') {
+  // If still loading, wait for DOMContentLoaded
   document.addEventListener('DOMContentLoaded', loadLandingPage);
 } else {
+  // DOM is already ready, load immediately
   loadLandingPage();
 }
 

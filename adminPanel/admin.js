@@ -17,6 +17,10 @@ const hide = (el) => el?.classList.add("hidden");
 let currentAdmin = null;
 let currentTab = "dashboard";
 
+// Track pending approvals/rejections to prevent duplicate requests
+const pendingApprovals = new Set();
+const pendingRejections = new Set();
+
 // Format currency
 function formatLBP(amount) {
   if (!amount && amount !== 0) return "0 LBP";
@@ -249,11 +253,16 @@ async function loadDashboardStats() {
     const usersSnap = await db.collection("users").get();
     const totalUsers = usersSnap.size;
     
-    // Update stats
-    $("#stat-today-orders").textContent = todayOrders;
-    $("#stat-pending-orders").textContent = pendingOrders;
-    $("#stat-today-revenue").textContent = formatLBP(todayRevenue);
-    $("#stat-total-users").textContent = totalUsers;
+    // Update stats (with null checks)
+    const todayOrdersEl = $("#stat-today-orders");
+    const pendingOrdersEl = $("#stat-pending-orders");
+    const todayRevenueEl = $("#stat-today-revenue");
+    const totalUsersEl = $("#stat-total-users");
+    
+    if (todayOrdersEl) todayOrdersEl.textContent = todayOrders;
+    if (pendingOrdersEl) pendingOrdersEl.textContent = pendingOrders;
+    if (todayRevenueEl) todayRevenueEl.textContent = formatLBP(todayRevenue);
+    if (totalUsersEl) totalUsersEl.textContent = totalUsers;
     
     // Load recent orders
     await loadDashboardRecentOrders();
@@ -268,12 +277,18 @@ async function loadDashboardStats() {
 
 async function loadDashboardRecentOrders() {
   try {
+    const container = $("#dashboard-recent-orders");
+    
+    // Check if container exists (dashboard might not be loaded)
+    if (!container) {
+      console.warn("Dashboard recent orders container not found");
+      return;
+    }
+    
     const ordersSnap = await db.collection("orders")
       .orderBy("createdAt", "desc")
       .limit(5)
       .get();
-    
-    const container = $("#dashboard-recent-orders");
     
     if (ordersSnap.empty) {
       container.innerHTML = '<p class="text-gray-400 text-center py-8">No orders yet</p>';
@@ -317,6 +332,12 @@ async function loadDashboardRecentOrders() {
 
 function loadServiceTypeStats(serviceTypes) {
   const container = $("#dashboard-service-stats");
+  
+  // Check if container exists (dashboard might not be loaded)
+  if (!container) {
+    console.warn("Dashboard service stats container not found");
+    return;
+  }
   
   if (Object.keys(serviceTypes).length === 0) {
     container.innerHTML = '<p class="text-gray-400 text-center py-8">No orders today</p>';
@@ -1407,71 +1428,295 @@ async function loadRevenueData(range, customDate = null) {
 }
 
 async function approveOrder(orderId) {
+  // Prevent duplicate requests
+  if (pendingApprovals.has(orderId)) {
+    return;
+  }
+
   if (!confirm("Are you sure you want to approve this order?")) return;
+  
+  // Mark as pending
+  pendingApprovals.add(orderId);
+  
+  // Disable the button immediately to prevent multiple clicks
+  const approveBtn = document.querySelector(`button[onclick="approveOrder('${orderId}')"]`);
+  const rejectBtn = document.querySelector(`button[onclick="rejectOrder('${orderId}')"]`);
+  if (approveBtn) {
+    approveBtn.disabled = true;
+    const originalText = approveBtn.textContent;
+    approveBtn.textContent = "Approving...";
+  }
+  if (rejectBtn) rejectBtn.disabled = true;
   
   try {
     const orderRef = db.collection("orders").doc(orderId);
-    await db.runTransaction(async (tx) => {
-      // Read order first
-      const orderSnap = await tx.get(orderRef);
-      if (!orderSnap.exists) throw new Error('Order not found');
-      const orderData = orderSnap.data();
-
-      // If we need to adjust package stock, read the package doc as well (reads must happen before writes)
-      let pkgSnap = null;
-      let packageRef = null;
-      let shouldAdjustStock = false;
-
-      if (orderData.packageId && !orderData.stockAdjusted) {
-        packageRef = db.collection('packages').doc(orderData.packageId);
-        pkgSnap = await tx.get(packageRef);
-        shouldAdjustStock = pkgSnap.exists;
+    
+    // Pre-check: Try a simple read first to detect quota issues early and check order status
+    try {
+      const preCheckSnap = await orderRef.get();
+      if (!preCheckSnap.exists) {
+        throw new Error('Order not found');
       }
-
-      // Now perform writes
-      const orderUpdate = {
-        status: "approved",
-        approvedBy: currentAdmin.username,
-        approvedAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      if (shouldAdjustStock) {
-        orderUpdate.stockAdjusted = true;
+      const preCheckData = preCheckSnap.data();
+      if (preCheckData.status === "approved") {
+        throw new Error('Order already approved');
       }
-
-      tx.update(orderRef, orderUpdate);
-
-      if (shouldAdjustStock && pkgSnap) {
-        const currentQty = pkgSnap.data().quantity || 0;
-        const newQty = Math.max(0, currentQty - 1);
-        tx.update(packageRef, { quantity: newQty });
+    } catch (preCheckError) {
+      // If it's already approved or not found, throw immediately
+      if (preCheckError.message?.includes('already approved') || preCheckError.message?.includes('not found')) {
+        throw preCheckError;
       }
-    });
+      // If it's a quota error, fail immediately with clear message
+      if (preCheckError.code === 'resource-exhausted' || preCheckError.code === 8 || 
+          preCheckError.message?.includes('Quota') || preCheckError.message?.includes('429')) {
+        throw new Error('Firebase quota exceeded. Please wait 10-15 minutes before trying again. Your daily quota limit has been reached.');
+      }
+      // For other errors, continue (might succeed in transaction)
+    }
+    
+    // Add retry logic with exponential backoff for quota errors
+    let retries = 0;
+    const maxRetries = 2; // Reduced retries since Firebase SDK already retries internally
+    let lastError = null;
+    
+    while (retries <= maxRetries) {
+      try {
+        // Wait before attempting (longer wait for retries)
+        if (retries > 0) {
+          const waitTime = Math.pow(2, retries) * 2000; // 2s, 4s, 8s
+          console.warn(`Waiting ${waitTime/1000}s before retry (attempt ${retries + 1}/${maxRetries + 1})`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+        
+        // Use a timeout to prevent Firebase from retrying too many times
+        const transactionPromise = db.runTransaction(async (tx) => {
+          // Read order first
+          const orderSnap = await tx.get(orderRef);
+          if (!orderSnap.exists) throw new Error('Order not found');
+          const orderData = orderSnap.data();
+
+          // Double-check status
+          if (orderData.status === "approved") {
+            throw new Error('Order already approved');
+          }
+
+          // If we need to adjust package stock, read the package doc as well (reads must happen before writes)
+          let pkgSnap = null;
+          let packageRef = null;
+          let shouldAdjustStock = false;
+
+          if (orderData.packageId && !orderData.stockAdjusted) {
+            packageRef = db.collection('packages').doc(orderData.packageId);
+            pkgSnap = await tx.get(packageRef);
+            shouldAdjustStock = pkgSnap.exists;
+          }
+
+          // Now perform writes
+          const orderUpdate = {
+            status: "approved",
+            approvedBy: currentAdmin.username,
+            approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+          };
+
+          if (shouldAdjustStock) {
+            orderUpdate.stockAdjusted = true;
+          }
+
+          tx.update(orderRef, orderUpdate);
+
+          if (shouldAdjustStock && pkgSnap) {
+            const currentQty = pkgSnap.data().quantity || 0;
+            const newQty = Math.max(0, currentQty - 1);
+            tx.update(packageRef, { quantity: newQty });
+          }
+        });
+        
+        // Add a timeout to the transaction (5 seconds)
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Transaction timeout - quota may be exhausted')), 5000);
+        });
+        
+        await Promise.race([transactionPromise, timeoutPromise]);
+        
+        // Success - break out of retry loop
+        break;
+      } catch (error) {
+        lastError = error;
+        
+        // Check if it's a quota/resource-exhausted error
+        if (error.code === 'resource-exhausted' || error.code === 8 || error.message?.includes('Quota') || error.message?.includes('429')) {
+          if (retries < maxRetries) {
+            retries++;
+            continue;
+          } else {
+            // Max retries reached - provide clear message
+            throw new Error('Firebase quota exceeded. Please wait 10-15 minutes before trying again. Your daily quota limit has been reached. Consider upgrading your Firebase plan if this happens frequently.');
+          }
+        }
+        
+        // For other errors, don't retry
+        throw error;
+      }
+    }
 
     alert("Order approved successfully!");
-    await refreshOrders();
+    
+    // Update the UI without full refresh to save quota
+    if (currentTab === "orders") {
+      // Update the specific row in the table
+      const row = document.querySelector(`button[onclick="approveOrder('${orderId}')"]`)?.closest('tr') || 
+                  document.querySelector(`button[onclick="rejectOrder('${orderId}')"]`)?.closest('tr');
+      if (row) {
+        // Update status badge
+        const statusCell = row.querySelector('td:nth-child(7)');
+        if (statusCell) {
+          statusCell.innerHTML = '<span class="px-2 py-1 rounded text-xs bg-green-500/20 text-green-500">approved</span>';
+        }
+        
+        // Remove action buttons since order is approved
+        const actionsCell = row.querySelector('td:nth-child(8)');
+        if (actionsCell) {
+          actionsCell.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-gray-500 text-xs">No actions</span>
+              <button onclick="deleteOrder('${orderId}')" class="px-3 py-1 rounded bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium">
+                Delete
+              </button>
+            </div>
+          `;
+        }
+      } else {
+        // Fallback: full refresh if row not found
+        await refreshOrders();
+      }
+    }
   } catch (error) {
     console.error("Error approving order:", error);
-    alert("Failed to approve order");
+    
+    // User-friendly error messages
+    let errorMessage = "Failed to approve order";
+    if (error.message?.includes('quota') || error.message?.includes('Quota')) {
+      errorMessage = "Firebase quota exceeded. Please wait a few minutes before trying again.";
+    } else if (error.message?.includes('already approved')) {
+      errorMessage = "This order is already approved.";
+    } else {
+      errorMessage = error.message || "Failed to approve order. Please try again.";
+    }
+    
+    alert(errorMessage);
+    
+    // Re-enable buttons on error
+    if (approveBtn) {
+      approveBtn.disabled = false;
+      approveBtn.textContent = "Approve";
+    }
+    if (rejectBtn) rejectBtn.disabled = false;
+  } finally {
+    // Remove from pending set
+    pendingApprovals.delete(orderId);
   }
 }
 
 async function rejectOrder(orderId) {
+  // Prevent duplicate requests
+  if (pendingRejections.has(orderId)) {
+    return;
+  }
+
   const reason = prompt("Enter rejection reason (optional):");
+  if (reason === null) return; // User cancelled
+  
+  // Mark as pending
+  pendingRejections.add(orderId);
+  
+  // Disable buttons
+  const approveBtn = document.querySelector(`button[onclick="approveOrder('${orderId}')"]`);
+  const rejectBtn = document.querySelector(`button[onclick="rejectOrder('${orderId}')"]`);
+  if (rejectBtn) {
+    rejectBtn.disabled = true;
+    const originalText = rejectBtn.textContent;
+    rejectBtn.textContent = "Rejecting...";
+  }
+  if (approveBtn) approveBtn.disabled = true;
   
   try {
-    await db.collection("orders").doc(orderId).update({
-      status: "rejected",
-      rejectedBy: currentAdmin.username,
-      rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      rejectionReason: reason || ""
-    });
+    // Add retry logic for quota errors
+    let retries = 0;
+    const maxRetries = 3;
+    
+    while (retries <= maxRetries) {
+      try {
+        await db.collection("orders").doc(orderId).update({
+          status: "rejected",
+          rejectedBy: currentAdmin.username,
+          rejectedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          rejectionReason: reason || ""
+        });
+        break; // Success
+      } catch (error) {
+        // Check if it's a quota error
+        if ((error.code === 'resource-exhausted' || error.code === 8 || error.message?.includes('Quota') || error.message?.includes('429')) && retries < maxRetries) {
+          const waitTime = Math.pow(2, retries) * 1000;
+          console.warn(`Quota exceeded, retrying in ${waitTime/1000}s (attempt ${retries + 1}/${maxRetries + 1})`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+          retries++;
+          continue;
+        }
+        throw error;
+      }
+    }
     
     alert("Order rejected successfully!");
-    await refreshOrders();
+    
+    // Update the UI without full refresh to save quota
+    if (currentTab === "orders") {
+      // Update the specific row in the table
+      const row = document.querySelector(`button[onclick="rejectOrder('${orderId}')"]`)?.closest('tr') ||
+                  document.querySelector(`button[onclick="approveOrder('${orderId}')"]`)?.closest('tr');
+      if (row) {
+        // Update status badge
+        const statusCell = row.querySelector('td:nth-child(7)');
+        if (statusCell) {
+          statusCell.innerHTML = '<span class="px-2 py-1 rounded text-xs bg-red-500/20 text-red-500">rejected</span>';
+        }
+        
+        // Remove action buttons since order is rejected
+        const actionsCell = row.querySelector('td:nth-child(8)');
+        if (actionsCell) {
+          actionsCell.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-gray-500 text-xs">No actions</span>
+              <button onclick="deleteOrder('${orderId}')" class="px-3 py-1 rounded bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium">
+                Delete
+              </button>
+            </div>
+          `;
+        }
+      } else {
+        // Fallback: full refresh if row not found
+        await refreshOrders();
+      }
+    }
   } catch (error) {
     console.error("Error rejecting order:", error);
-    alert("Failed to reject order");
+    
+    let errorMessage = "Failed to reject order";
+    if (error.message?.includes('quota') || error.message?.includes('Quota')) {
+      errorMessage = "Firebase quota exceeded. Please wait a few minutes before trying again.";
+    } else {
+      errorMessage = error.message || "Failed to reject order. Please try again.";
+    }
+    
+    alert(errorMessage);
+    
+    // Re-enable buttons on error
+    if (rejectBtn) {
+      rejectBtn.disabled = false;
+      rejectBtn.textContent = "Reject";
+    }
+    if (approveBtn) approveBtn.disabled = false;
+  } finally {
+    pendingRejections.delete(orderId);
   }
 }
 

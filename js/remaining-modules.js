@@ -2469,47 +2469,68 @@ function showLanding() {
 
 function initApp() {
   initTheme();
-  initAuthView();
+  
+  // Hide loading view immediately and show landing page
+  // This gives users instant feedback instead of waiting for Firebase
+  const loadingView = document.getElementById('loading-view');
+  if (loadingView) {
+    loadingView.classList.add('hidden');
+  }
+  
+  // Show landing page immediately (optimistic display)
+  showLanding();
 
-  // Also wire topbar theme button
-  const topToggle = $("#toggle-theme");
-  if (topToggle) topToggle.addEventListener("click", () => setTheme(!document.documentElement.classList.contains("dark")));
-
-  // Show loading state initially to prevent landing page flash
-  showLoadingState();
-
-  let cleanup = null;
-  auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      // Check if user is blocked
-      try {
-        const userDoc = await db.collection("users").doc(user.uid).get();
-        const userData = userDoc.data();
-        
-        if (userData && userData.blocked) {
-          // User is blocked - sign them out
-          await auth.signOut();
-          alert("Your account has been blocked. Please contact support for assistance.");
-          showLanding();
-          return;
-        }
-        
-        // User is not blocked - proceed normally
-        showApp();
-        if (cleanup) cleanup();
-        cleanup = bootForUser(user);
-      } catch (error) {
-        console.error("Error checking user status:", error);
-        // If error checking, still allow login but log the error
-        showApp();
-        if (cleanup) cleanup();
-        cleanup = bootForUser(user);
-      }
+  // Wait for Firebase to be ready, then check auth state
+  function waitForFirebase(callback) {
+    if (window.auth && window.db) {
+      callback();
     } else {
-      if (cleanup) { cleanup(); cleanup = null; }
-      // Show landing page only after confirming user is not authenticated
-      showLanding();
+      // Check every 100ms if Firebase is ready
+      setTimeout(() => waitForFirebase(callback), 100);
     }
+  }
+
+  waitForFirebase(() => {
+    // Firebase is ready, now initialize auth and check state
+    initAuthView();
+    
+    // Also wire topbar theme button
+    const topToggle = $("#toggle-theme");
+    if (topToggle) topToggle.addEventListener("click", () => setTheme(!document.documentElement.classList.contains("dark")));
+
+    let cleanup = null;
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        // Check if user is blocked
+        try {
+          const userDoc = await db.collection("users").doc(user.uid).get();
+          const userData = userDoc.data();
+          
+          if (userData && userData.blocked) {
+            // User is blocked - sign them out
+            await auth.signOut();
+            alert("Your account has been blocked. Please contact support for assistance.");
+            showLanding();
+            return;
+          }
+          
+          // User is not blocked - proceed normally
+          showApp();
+          if (cleanup) cleanup();
+          cleanup = bootForUser(user);
+        } catch (error) {
+          console.error("Error checking user status:", error);
+          // If error checking, still allow login but log the error
+          showApp();
+          if (cleanup) cleanup();
+          cleanup = bootForUser(user);
+        }
+      } else {
+        if (cleanup) { cleanup(); cleanup = null; }
+        // User is not authenticated - landing page is already shown
+        // No need to call showLanding() again
+      }
+    });
   });
 }
 

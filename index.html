@@ -17,29 +17,60 @@
   <link rel="stylesheet" href="./css/auth.css">
   <link rel="stylesheet" href="./css/landing.css">
   
-  <!-- Tailwind CSS (Local) -->
-  <script src="./tailwind.js"></script>
+  <!-- Tailwind CSS (Load asynchronously to not block page render) -->
   <script>
-    if (typeof console !== 'undefined') {
-      const originalWarn = console.warn;
-      console.warn = function(...args) {
-        if (args[0]?.includes?.('cdn.tailwindcss.com')) return;
-        originalWarn.apply(console, args);
+    // Load Tailwind asynchronously after page starts rendering
+    (function() {
+      const script = document.createElement('script');
+      script.src = './tailwind.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+      
+      // Suppress Tailwind CDN warning
+      if (typeof console !== 'undefined') {
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+          if (args[0]?.includes?.('cdn.tailwindcss.com')) return;
+          originalWarn.apply(console, args);
+        };
       }
-    }
+    })();
   </script>
   
   <script src="https://unpkg.com/feather-icons" defer></script>
   <link rel="icon" type="image/png" href="./Logo.png">
   
-  <!-- Firebase SDK (must load synchronously before firebase-init.js) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-  
-  <!-- Initialize Firebase immediately after SDK loads -->
-  <script src="./js/firebase-init.js"></script>
+  <!-- Firebase SDK (load asynchronously to not block page render) -->
+  <script>
+    // Load Firebase asynchronously after page starts rendering
+    (function() {
+      const scripts = [
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js',
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js',
+        'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js'
+      ];
+      
+      let loaded = 0;
+      scripts.forEach((src, index) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = () => {
+          loaded++;
+          if (loaded === scripts.length) {
+            // All Firebase SDKs loaded, now load init
+            const initScript = document.createElement('script');
+            initScript.src = './js/firebase-init.js';
+            initScript.async = true;
+            document.head.appendChild(initScript);
+          }
+        };
+        document.head.appendChild(script);
+      });
+    })();
+  </script>
   
   <!-- Load other scripts asynchronously -->
   <script defer src="./pages-loader.js"></script>
