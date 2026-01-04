@@ -54,7 +54,33 @@ function initTopBar() {
   }
   
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", () => auth.signOut());
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        // Use window.auth to ensure we get the global auth object
+        const authInstance = window.auth || auth;
+        if (authInstance && typeof authInstance.signOut === 'function') {
+          await authInstance.signOut();
+          console.log("✅ Logout successful");
+        } else {
+          console.error("❌ Auth not available yet. Firebase may still be loading.");
+          // Fallback: manually show landing page if auth isn't ready
+          if (window.showLanding) {
+            window.showLanding();
+          } else {
+            // Force redirect to landing
+            const appShell = document.getElementById('app-shell');
+            const landingView = document.getElementById('landing-view');
+            if (appShell) appShell.classList.add('hidden');
+            if (landingView) landingView.classList.remove('hidden');
+          }
+        }
+      } catch (error) {
+        console.error("❌ Logout error:", error);
+        alert("Logout failed. Please try again.");
+      }
+    });
+  } else {
+    console.error("❌ Logout button not found!");
   }
 }
 

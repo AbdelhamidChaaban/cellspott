@@ -2467,6 +2467,9 @@ function showLanding() {
   }
 }
 
+// Expose globally for use in other scripts
+window.showLanding = showLanding;
+
 function initApp() {
   initTheme();
   
@@ -2527,8 +2530,8 @@ function initApp() {
         }
       } else {
         if (cleanup) { cleanup(); cleanup = null; }
-        // User is not authenticated - landing page is already shown
-        // No need to call showLanding() again
+        // User logged out - hide app and show landing page
+        showLanding();
       }
     });
   });

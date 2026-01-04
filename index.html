@@ -41,9 +41,10 @@
   <script src="https://unpkg.com/feather-icons" defer></script>
   <link rel="icon" type="image/png" href="./Logo.png">
   
-  <!-- Firebase SDK (load asynchronously to not block page render) -->
+  <!-- Firebase SDK (load sequentially asynchronously to not block page render) -->
   <script>
-    // Load Firebase asynchronously after page starts rendering
+    // Load Firebase SDKs sequentially (each depends on previous ones)
+    // This ensures dependencies are loaded in order without blocking page render
     (function() {
       const scripts = [
         'https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js',
@@ -52,23 +53,33 @@
         'https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js'
       ];
       
-      let loaded = 0;
-      scripts.forEach((src, index) => {
+      function loadScript(index) {
+        if (index >= scripts.length) {
+          // All Firebase SDKs loaded, now load init
+          const initScript = document.createElement('script');
+          initScript.src = './js/firebase-init.js';
+          initScript.async = true;
+          document.head.appendChild(initScript);
+          return;
+        }
+        
         const script = document.createElement('script');
-        script.src = src;
+        script.src = scripts[index];
         script.async = true;
         script.onload = () => {
-          loaded++;
-          if (loaded === scripts.length) {
-            // All Firebase SDKs loaded, now load init
-            const initScript = document.createElement('script');
-            initScript.src = './js/firebase-init.js';
-            initScript.async = true;
-            document.head.appendChild(initScript);
-          }
+          // Load next script after current one completes
+          loadScript(index + 1);
+        };
+        script.onerror = () => {
+          console.error('Failed to load Firebase script:', scripts[index]);
+          // Continue loading next script even on error
+          loadScript(index + 1);
         };
         document.head.appendChild(script);
-      });
+      }
+      
+      // Start loading from first script
+      loadScript(0);
     })();
   </script>
   
