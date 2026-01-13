@@ -14,7 +14,7 @@ window.loadLandingPage = async function loadLandingPage() {
     if (response.ok) {
       const html = await response.text();
       
-      // Extract and inject styles and scripts
+      // Extract and inject styles FIRST, before inserting content
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = html;
       
@@ -31,6 +31,11 @@ window.loadLandingPage = async function loadLandingPage() {
           document.head.appendChild(newStyle);
         }
         styleTag.remove(); // Remove style tag after extracting
+        
+        // Force browser to apply styles immediately by triggering a reflow
+        if (document.body) {
+          void document.body.offsetHeight;
+        }
       }
       
       // Extract and remove script tags
@@ -41,7 +46,7 @@ window.loadLandingPage = async function loadLandingPage() {
         scriptTag.remove(); // Remove script tag after extracting
       }
       
-      // Get the content div and insert it (style and script tags already removed)
+      // Get the content div and insert it AFTER styles are injected
       const contentDiv = tempDiv.querySelector('#landing-page');
       if (contentDiv) {
         landingView.innerHTML = contentDiv.outerHTML;

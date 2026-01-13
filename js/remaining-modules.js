@@ -2444,7 +2444,7 @@ function showLoadingState() {
   }
 }
 
-function showLanding() {
+async function showLanding() {
   const landingView = document.getElementById('landing-view');
   const authView = document.getElementById('auth-view');
   const appShell = document.getElementById('app-shell');
@@ -2465,14 +2465,14 @@ function showLanding() {
   // Disable wallpaper loading for landing page (saves 5.7MB!)
   document.body.classList.remove('app-shell-active');
   
-  // Show landing view
-  if (landingView) {
-    landingView.classList.remove('hidden');
+  // Load landing page content and styles FIRST (before showing the view)
+  if (window.loadLandingPage) {
+    await window.loadLandingPage();
   }
   
-  // Load landing page content dynamically
-  if (window.loadLandingPage) {
-    window.loadLandingPage();
+  // Show landing view AFTER styles are loaded to prevent FOUC
+  if (landingView) {
+    landingView.classList.remove('hidden');
   }
 }
 
