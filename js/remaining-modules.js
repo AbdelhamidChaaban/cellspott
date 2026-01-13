@@ -2482,15 +2482,8 @@ window.showLanding = showLanding;
 function initApp() {
   initTheme();
   
-  // Hide loading view immediately and show landing page
-  // This gives users instant feedback instead of waiting for Firebase
-  const loadingView = document.getElementById('loading-view');
-  if (loadingView) {
-    loadingView.classList.add('hidden');
-  }
-  
-  // Show landing page immediately (optimistic display)
-  showLanding();
+  // Keep loading view visible until we check auth state
+  // This prevents showing landing page to authenticated users
 
   // Wait for Firebase to be ready, then check auth state
   function waitForFirebase(callback) {
