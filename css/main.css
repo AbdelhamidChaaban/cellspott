@@ -8,12 +8,30 @@
 .dark ::-webkit-scrollbar-thumb { background: #1a2942; }
 .dark ::-webkit-scrollbar-track { background: #0a1628; }
 
-/* Wallpaper Background for All Pages */
+/* Wallpaper Background - Only for App Shell (not landing page) */
 body {
   position: relative;
 }
 
-body::before {
+/* Only show wallpaper when app-shell is visible (logged in users) */
+#app-shell ~ body::before,
+body:has(#app-shell:not(.hidden))::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("../wallpaper.jpg"), #000;
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
+  z-index: -1;
+  opacity: 0.3;
+}
+
+/* Fallback for browsers that don't support :has() - use class-based approach */
+body.app-shell-active::before {
   content: "";
   position: fixed;
   top: 0;

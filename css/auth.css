@@ -3,7 +3,8 @@
   position: relative;
 }
 
-#auth-view::before {
+/* Lazy load wallpaper for auth view - only when auth-view is visible */
+#auth-view:not(.hidden)::before {
   content: "";
   position: absolute;
   width: 100%;

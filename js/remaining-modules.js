@@ -2257,6 +2257,9 @@ function showAuth() {
   if (appShell) {
     appShell.classList.add('hidden');
   }
+  
+  // Remove app-shell-active class (auth view loads wallpaper via its own CSS)
+  document.body.classList.remove('app-shell-active');
 }
 function showApp() {
   const landingView = document.getElementById('landing-view');
@@ -2278,6 +2281,9 @@ function showApp() {
   if (appShell) {
     appShell.classList.remove('hidden');
   }
+  
+  // Enable wallpaper loading for app shell
+  document.body.classList.add('app-shell-active');
 }
 
 async function checkFirstLogin(uid) {
@@ -2455,6 +2461,9 @@ function showLanding() {
   if (appShell) {
     appShell.classList.add('hidden');
   }
+  
+  // Disable wallpaper loading for landing page (saves 5.7MB!)
+  document.body.classList.remove('app-shell-active');
   
   // Show landing view
   if (landingView) {

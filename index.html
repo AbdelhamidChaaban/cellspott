@@ -110,7 +110,8 @@
       position: relative;
     }
     
-    body::before {
+    /* Wallpaper only loads when app-shell is active (not on landing page) */
+    body.app-shell-active::before {
       content: "";
       position: fixed;
       top: 0;
@@ -130,7 +131,8 @@
       position: relative;
     }
     
-    #auth-view::before {
+    /* Lazy load wallpaper for auth view - only when auth-view is visible */
+    #auth-view:not(.hidden)::before {
       content: "";
       position: absolute;
       width: 100%;
